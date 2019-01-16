@@ -1,5 +1,13 @@
 <template>
   <div class="hello">
+
+    <div v-for="raw in chessboard" :key="raw" >
+      <div v-for="cell in raw" :key="cell">
+        {{ cell.piece }} - {{ cell.x }} / {{ cell.y }}
+      </div>
+    </div>
+    <button v-on:click="initializeChessboard">Click Me!</button>
+
     <h1>{{ msg }}</h1>
     <h2>Essential Links</h2>
     <ul>
@@ -89,6 +97,16 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App'
+    }
+  },
+  computed: {
+    chessboard () {
+      return this.$store.state.chessboard
+    }
+  },
+  methods: {
+    initializeChessboard: function () {
+      this.$store.dispatch('setChessboard', 'url')
     }
   }
 }
