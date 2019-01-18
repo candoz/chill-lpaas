@@ -17,7 +17,7 @@ export default {
   ],
   computed: {
     piece () {
-      return this.$store.state.chessboard[this.x][this.y].piece
+      return this.$store.state.chessboard[this.x][this.y] // .piece
     },
     color () {
       return (this.x + this.y) % 2 === 0 ? 'light' : 'dark'
