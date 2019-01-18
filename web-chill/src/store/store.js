@@ -59,7 +59,7 @@ export const store = new Vuex.Store({
     // ]
     currentTurn: PlayerColor.WHITE,
     playerColor: PlayerColor.WHITE,
-    chessboard: [],
+    chessboard: createTestChessBoard(),
     result: ResultStatus.STILL_GAMING
   },
   getters: {
@@ -105,7 +105,7 @@ export const store = new Vuex.Store({
       setTimeout(function () {
         // ask to server the current chessboard state insted timeout function
         context.commit('setChessboard', testChessBoard)
-      }, 2000)
+      }, 100)
     }
   }
 })
