@@ -22,7 +22,7 @@ export default {
       return this.$store.state.chessboard[this.x][this.y].selected
     },
     color () {
-      return (this.x + this.y) % 2 === 0 ? 'light' : 'dark'
+      return (this.x + this.y) % 2 === 0 ? 'dark' : 'light'
     }
   },
   methods: {
