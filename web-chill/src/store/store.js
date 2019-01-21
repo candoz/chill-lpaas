@@ -51,64 +51,42 @@ function createTestChessBoard () {
 export const store = new Vuex.Store({
   strict: true,
   state: {
-    // products: [
-    //     {name: 'Banana Skin', price: 20},
-    //     {name: 'Shiny Star', price: 40},
-    //     {name: 'Green Shells', price: 60},
-    //     {name: 'Red Shells', price: 80}
-    // ]
     currentTurn: PlayerColor.WHITE,
     playerColor: PlayerColor.WHITE,
     chessboard: createTestChessBoard(),
     result: ResultStatus.STILL_GAMING
   },
   getters: {
-    // saleProducts: (state) => {
-    //     var saleProducts = state.products.map( product => {
-    //         return {
-    //             name:  '**' + product.name + '**',
-    //             price: product.price / 2,
-    //         };
-    //     });
-    //     return saleProducts;
-    // }
     currentChessboard: (state) => {
       return state.chessboard
+    },
+    cellsSelectedInBoard: (state) => {
+      return state.chessboard.flat().filter(cell => cell.selected)
     }
   },
   mutations: {
-    // reducePrice: (state, payload) => {
-    //     state.products.forEach( product => {
-    //         product.price -= payload
-    //     });
-    // }
     setChessboard: (state, payload) => {
       state.chessboard = payload
     },
     setCurrentTurn: (state, color) => {
       state.currentTurn = color
     },
-    setPlayerColor: (state) => {
+    switchPlayerColor: (state) => {
       state.playerColor = state.playerColor === PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE
     },
     setResult: (state, result) => {
       state.result = result
+    },
+    switchCellSelection: (state, payload) => {
+      state.chessboard[payload.x][payload.y].selected = state.chessboard[payload.x][payload.y].selected !== true
     }
   },
   actions: {
-    // reducePrice: (context, payload) => {
-    //     setTimeout(function(){ // reach out for data
-    //         context.commit('reducePrice', payload);
-    //     }, 2000);
-    // }
     setChessboard: (context, url) => {
       setTimeout(function () {
         // ask to server the current chessboard state insted timeout function
         context.commit('setChessboard', testChessBoard)
       }, 100)
-    },
-    switchPlayer: (context) => {
-      context.commit('setPlayerColor')
     }
   }
 })

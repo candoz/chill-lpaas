@@ -49,7 +49,7 @@ export default {
       this.$store.dispatch('setChessboard', 'url')
     },
     switchPlayer: function () {
-      this.$store.dispatch('switchPlayer')
+      this.$store.commit('switchPlayerColor')
     }
   }
 }
