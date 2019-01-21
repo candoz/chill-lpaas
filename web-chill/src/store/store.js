@@ -34,9 +34,9 @@ const ChessPiece = {
 const testChessBoard = createTestChessBoard()
 function createTestChessBoard () {
   let matrix = []
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i <= 8; i++) {
     matrix[i] = []
-    for (let j = 0; j < 8; j++) {
+    for (let j = 0; j <= 8; j++) {
       matrix[i][j] = {
         x: i,
         y: j,
@@ -88,8 +88,8 @@ export const store = new Vuex.Store({
     setCurrentTurn: (state, color) => {
       state.currentTurn = color
     },
-    setPlayerColor: (state, color) => {
-      state.playerColor = color
+    setPlayerColor: (state) => {
+      state.playerColor = state.playerColor === PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE
     },
     setResult: (state, result) => {
       state.result = result
@@ -106,6 +106,9 @@ export const store = new Vuex.Store({
         // ask to server the current chessboard state insted timeout function
         context.commit('setChessboard', testChessBoard)
       }, 100)
+    },
+    switchPlayer: (context) => {
+      context.commit('setPlayerColor')
     }
   }
 })
