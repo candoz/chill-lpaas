@@ -1,0 +1,8 @@
+version: '3'
+services:
+  web-chill:
+    build: ./web-chill/.
+    ports: 
+    - "5000:5000"
+  lpaas-ws:
+    build: ../lpaas-ws/
