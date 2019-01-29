@@ -30,13 +30,6 @@ history([]).
 % chessboard(-Board)
 chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y), Content), Board).
 
-chessboard_x(Board) :-
-  findall(
-    [X,Y,Result],
-    (cell(point(X,Y), Content), text_concat('x', Content, Temp), text_concat(Temp, 'x', Result)),
-    Board
-  ).
-
 %%% Move the Piece, if possible, from P0 to P
 % do_move(+Piece, +P0, +P)
 do_move(Piece, P0, P) :-
