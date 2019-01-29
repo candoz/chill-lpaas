@@ -28,7 +28,12 @@ history([]).
 %%% Retrieve all the chessboard cells in a list of lists,
 %%% where each sub-list is composed by X coordinate, Y coordinate and the respective Content.
 % chessboard(-Board)
-chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y),Content), Board).
+chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y), Content), Board).
+chessboard(Board, json_format) :- 
+  findall(
+    [X,Y,Result],
+    (cell(point(X,Y),Content), text_concat('\"',Content, Temp), text_concat(Temp, '\"', Result)),
+    Board).
 
 %%% Move the Piece, if possible, from P0 to P
 % do_move(+Piece, +P0, +P)
@@ -232,7 +237,7 @@ legal_move(P0, P) :-
 %      steps_east(P0, P, 2),
 %      cell(P, e),
 %      not under_enemy_attack(P),
-%     steps_east(P0, P_rook, 3),
+%      steps_east(P0, P_rook, 3),
 %      first_move(P_rook),
 %      steps_east(P0, P1, 1),
 %      cell(P1, e),
@@ -252,6 +257,7 @@ legal_move(P0, P) :-
 % under_enemy_attack(+P)
 under_enemy_attack(P) :- 
   cell(Pi, _),
+  
   legal_move(Pi, P),
   print(Pi),
   !.  % green cut
