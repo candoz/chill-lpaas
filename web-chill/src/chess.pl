@@ -32,8 +32,9 @@ chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y), Content), Board).
 chessboard_json(Board) :- 
   findall(
     [X,Y,Result],
-    (cell(point(X,Y),Content), text_concat('\"',Content, Temp), text_concat(Temp, '\"', Result)),
+    (cell(point(X,Y),Content), text_concat('',Content, Result)),
     Board).
+
 
 %%% Move the Piece, if possible, from P0 to P
 % do_move(+Piece, +P0, +P)
