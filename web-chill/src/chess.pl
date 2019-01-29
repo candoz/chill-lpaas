@@ -1,19 +1,19 @@
-%    Black Rook    .    Black kNight    .    Black Bishop    .     Black Queen    .     Black King     .    Black Bishop    .    Black kNight    .     Black Rook     .
-%    Black Pawn    .     Black Pawn     .     Black Pawn     .     Black Pawn     .     Black Pawn     .     Black Pawn     .     Black Pawn     .     Black Pawn     .
+%    Black Rook    |    Black kNight    |    Black Bishop    |     Black Queen    |     Black King     |    Black Bishop    |    Black kNight    |     Black Rook     |
+%    Black Pawn    |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |
 cell(point(0,7),br). cell(point(1,7),bn). cell(point(2,7),bb). cell(point(3,7),bq). cell(point(4,7),bk). cell(point(5,7),bb). cell(point(6,7),bn). cell(point(7,7),br).
 cell(point(0,6),bp). cell(point(1,6),bp). cell(point(2,6),bp). cell(point(3,6),bp). cell(point(4,6),bp). cell(point(5,6),bp). cell(point(6,6),bp). cell(point(7,6),bp).
-cell(point(0,5),e) . cell(point(1,5),e) . cell(point(2,5),e) . cell(point(3,5),e) . cell(point(4,5),e) . cell(point(5,5),e) . cell(point(6,5),e) . cell(point(7,5),e) . % empty row
-cell(point(0,4),e) . cell(point(1,4),e) . cell(point(2,4),e) . cell(point(3,4),e) . cell(point(4,4),e) . cell(point(5,4),e) . cell(point(6,4),e) . cell(point(7,4),e) . % empty row
-cell(point(0,3),e) . cell(point(1,3),e) . cell(point(2,3),e) . cell(point(3,3),e) . cell(point(4,3),e) . cell(point(5,3),e) . cell(point(6,3),e) . cell(point(7,3),e) . % empty row
-cell(point(0,2),e) . cell(point(1,2),e) . cell(point(2,2),e) . cell(point(3,2),e) . cell(point(4,2),e) . cell(point(5,2),e) . cell(point(6,2),e) . cell(point(7,2),e) . % empty row
+cell(point(0,5),e).  cell(point(1,5),e).  cell(point(2,5),e).  cell(point(3,5),e).  cell(point(4,5),e).  cell(point(5,5),e).  cell(point(6,5),e).  cell(point(7,5),e). % empty row
+cell(point(0,4),e).  cell(point(1,4),e).  cell(point(2,4),e).  cell(point(3,4),e).  cell(point(4,4),e).  cell(point(5,4),e).  cell(point(6,4),e).  cell(point(7,4),e). % empty row
+cell(point(0,3),e).  cell(point(1,3),e).  cell(point(2,3),e).  cell(point(3,3),e).  cell(point(4,3),e).  cell(point(5,3),e).  cell(point(6,3),e).  cell(point(7,3),e). % empty row
+cell(point(0,2),e).  cell(point(1,2),e).  cell(point(2,2),e).  cell(point(3,2),e).  cell(point(4,2),e).  cell(point(5,2),e).  cell(point(6,2),e).  cell(point(7,2),e). % empty row
 cell(point(0,1),wp). cell(point(1,1),wp). cell(point(2,1),wp). cell(point(3,1),wp). cell(point(4,1),wp). cell(point(5,1),wp). cell(point(6,1),wp). cell(point(7,1),wp).
 cell(point(0,0),wr). cell(point(1,0),wn). cell(point(2,0),wb). cell(point(3,0),wq). cell(point(4,0),wk). cell(point(5,0),wb). cell(point(6,0),wn). cell(point(7,0),wr).
-%    White Pawn    .     White Pawn     .     White Pawn     .     White Pawn     .     White Pawn     .     White Pawn     .     White Pawn     .     White Pawn     .
-%    White Rook    .    White kNight    .    White Bishop    .     White Queen    .     White King     .    White Bishop    .    White kNight    .     White Rook     .
+%    White Pawn    |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     .
+%    White Rook    |    White kNight    |    White Bishop    |     White Queen    |     White King     |    White Bishop    |    White kNight    |     White Rook     .
 
-turn(white). % white, black
-gave_up(none). % none, white, black
-agreed_to_draw(none). % none, white, black
+turn(white).          % white, black
+gave_up(none).        % white, black, none
+agreed_to_draw(none). % white, black, none
 
 %%%%%%% PUBLIC INTERFACE %%%%%%%%
 
