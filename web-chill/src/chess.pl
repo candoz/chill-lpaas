@@ -1,3 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                            Current game state                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %    Black Rook    |    Black kNight    |    Black Bishop    |     Black Queen    |     Black King     |    Black Bishop    |    Black kNight    |     Black Rook     |
 %    Black Pawn    |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |     Black Pawn     |
 cell(point(0,7),br). cell(point(1,7),bn). cell(point(2,7),bb). cell(point(3,7),bq). cell(point(4,7),bk). cell(point(5,7),bb). cell(point(6,7),bn). cell(point(7,7),br).
@@ -15,48 +19,45 @@ turn(white).          % white, black
 gave_up(none).        % white, black, none
 agreed_to_draw(none). % white, black, none
 
-%%%%%%% PUBLIC INTERFACE %%%%%%%%
+history([]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                            Public interfaces                               %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Retrieve all the chessboard cells in a list of lists,
-%%% where each sub-list is composed by X coordinate, Y coordinate and the respective content.
-% chessboard(-B)
-chessboard(B) :- findall([X,Y,Piece], cell(point(X,Y),Piece), B).
+%%% where each sub-list is composed by X coordinate, Y coordinate and the respective Content.
+% chessboard(-Board)
+chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y),Content), Board).
 
-%%% Do the move, if possible, from cell C0 to cell C.
-% do_move(+C0, +C)
+%%% Move the Piece, if possible, from P0 to P
+% do_move(+Piece, +P0, +P)
 do_move(Piece, P0, P) :-
-  turn(Color),
-  team(Piece, Color),
-  legal_move(P0, P),
-%  not(must_promote(Piece, P)),  % when reaching the last row, a pawn cannot move without promotion!
+  move_integrity_check(Piece, P0, P),
+  not must_promote(Piece, P), % when reaching the last row, a pawn cannot move without promotion
+  cell(P, P_content),
   update_board(
-    [cell(P0,P0_content), cell(P,P_content)], % things to retract
-    [cell(P0,e), cell(P,P0_content)]          % things to assert  
+    [cell(P0,Piece), cell(P,P_content)], % things to retract
+    [cell(P0,e), cell(P,Piece)]          % things to assert  
   ),
-  change_turn.  %!.  % green cut if everything is ok... maybe useless.
+  change_turn, !.
 
-%%% Do the move, if possible, from cell C0 to cell C and promote to a certain Promoted_piece.
-% do_move_and_promote(+Piece, +Promoted_piece, +P0, P)
-% do_move_and_promote(Piece, Promoted_piece, P0, P) :-
-%  turn(Color),
-%  team(Piece, Color),
-%  cell(P0, Piece),
-%  legal_move(P0, P),
-%  last_row(P, Color),
-%  legal_promotion(Piece, To_piece),
-%  cell(P, P_content),
-%  update_board(
-%    [cell(P0, Piece), cell(P, P_content)],  % things to retract
-%    [cell(P0, e), cell(P, Promoted_piece)]  % things to assert  
-%  ),
-%  change_turn,
-%  !.  % green cut if everything is ok...
+%%% Move the Piece, if possible, from P0 to P and promote it to Promoted_piece
+% do_move_and_promote(+Piece, +P0, +P, +Promoted_piece)
+do_move_and_promote(Piece, P0, P, Promoted_piece) :-
+  move_integrity_check(Piece, P0, P),
+  must_promote(Piece, P),
+  legal_promotion(Piece, To_piece),
+  cell(P, P_content),
+  update_board(
+    [cell(P0, Piece), cell(P, P_content)],  % things to retract
+    [cell(P0, e), cell(P, Promoted_piece)]  % things to assert  
+  ),
+  change_turn, !.
 
 % do_castle()
 
-%%% Checks the game result from: draw
-% check_result(?R) :-
-
+% check_result(?R)
 check_result(win(white)) :- gave_up(black), !.
 check_result(win(black)) :- gave_up(white), !.
 check_result(win(white)) :- turn(black), under_checkmate(black), !.
@@ -67,22 +68,35 @@ check_result(draw) :- turn(C), under_stall(C), !.
 check_result(under_check) :- turn(C), under_check(C), !.
 check_result(nothing).
 
-only_kings_on_board :-
-  not cell(_,wp), not cell(_,bp), % no pawns
-  not cell(_,wr), not cell(_,br), % no rooks
-  not cell(_,wn), not cell(_,bn), % no knights
-  not cell(_,wb), not cell(_,bb), % no bishops
-  not cell(_,wq), not cell(_,bq). % no queens
+% move_integrity_check(+Piece, +P0, +P)
+move_integrity_check(Piece, P0, P) :-
+  cell(Piece, P0),
+  turn(Color),
+  team(Piece, Color),
+  legal_move(P0, P),
+  (check_result(nothing); check_result(under_check)).
 
-%%%%%%% PRIVATE FUNCTINOALITIES FOR BOARD AND HISTORY UPDATES %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%          Private functionalities for history and staus update              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-history([]).
+% next_turn(?Previous, ?Next)
+next_turn(white, black).
+next_turn(black, white).
 
-update_board(Retracts_list, Asserts_list) :-
-  retract_these(Retracts_list),
-  assert_these(Asserts_list),
+% change_turn
+change_turn :-
+  turn(Current),
+  next_turn(Current, Next),
+  retract(turn(Current)),
+  assert(turn(Next)),
+  !.  % red cut!
+
+update_board(To_retract, To_assert) :-
+  retract_these(To_retract),
+  assert_these(To_assert),
   retract(history(Old_history)),
-  append([(Retracts_list, Asserts_list)], Old_history, Updated_history),
+  append([(To_retract, To_assert)], Old_history, Updated_history),
   assert(history(Updated_history)).
 
 undo_last_move :-
@@ -92,17 +106,14 @@ undo_last_move :-
   assert(history(Older_history)),
   change_turn.
 
-
 first_move(P) :- 
   history(H),
   first_move(P, H).
-
 first_move(P, []).
 first_move(P, [(Last_retracted_list, Last_asserted_list) | Older_history]) :- 
   not(member(cell(P, _), Last_retracted_list)),
   not(member(cell(P, _), Last_asserted_list)),
   first_move(P, Older_history).
-
 
 retract_these([]).
 retract_these([Head | Tail]) :- retract(Head), retract_these(Tail).
@@ -123,8 +134,8 @@ queen(wq).  queen(bq).   % white and black Queens
 king(wk).   king(bk).    % white and balck Kings
 
 % team(?Piece, ?Color)
-team(Piece, Color) :- member(Piece, [wp,wr,wn,wb,wq,wk]), Color = white.
-team(Piece, Color) :- member(Piece, [bp,br,bn,bb,bq,bk]), Color = black.
+team(Piece, white) :- member(Piece, [wp,wr,wn,wb,wq,wk]).
+team(Piece, black) :- member(Piece, [bp,br,bn,bb,bq,bk]).
 
 % allies(?Piece1, ?Piece2)
 allies(Piece1, Piece2) :- 
@@ -211,43 +222,32 @@ legal_move(P0, P) :-
 %%%%%%%% SPECIAL MOVES: CASTLING %%%%%%%%
 
 %%% legal_castling
-legal_castling(P0, P) :- 
-  cell(P0, P0_content),
-  king(P0_content),
-  first_move(P0),
-  not under_enemy_attack(P0),
-  ( 
-    ( % short castle
-      steps_east(P0, P, 2),
-      cell(P, e),
-      not under_enemy_attack(P),
-      steps_east(P0, P_rook, 3),
-      first_move(P_rook),
-      steps_east(P0, P1, 1),
-      cell(P1, e),
-      not under_enemy_attack(P1)
-    );
-    ( % long castle
-      steps_west(P0, P, 2)
-    )
-  ).
+%legal_castling(P0, P) :- 
+%  cell(P0, P0_content),
+%  king(P0_content),
+%  first_move(P0),
+%  not under_enemy_attack(P0),
+%  ( 
+%    ( % short castling
+%      steps_east(P0, P, 2),
+%      cell(P, e),
+%      not under_enemy_attack(P),
+%     steps_east(P0, P_rook, 3),
+%      first_move(P_rook),
+%      steps_east(P0, P1, 1),
+%      cell(P1, e),
+%      not under_enemy_attack(P1)
+%    );
+%    ( % long castling
+%      steps_west(P0, P, 2),
+%      cell(P, e),
+%    )
+%  ).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                          General chess rules                               %%
+%%               Some chess concepts and other useful stuff                   %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% next_turn(?Previous, ?Next)
-next_turn(white, black).
-next_turn(black, white).
-
-% change_turn
-change_turn :-
-  next_turn(Current, Next),
-  retract(turn(Current)),
-  assert(turn(Next)),
-  !.  % red cut!
-
 
 % under_enemy_attack(+P)
 under_enemy_attack(P) :- 
@@ -263,7 +263,6 @@ under_check(Color) :-
   cell(P, K),
   under_enemy_attack(P),
   !.  % green cut
-
 
 % can_move(+Color)
 can_move(Color) :-
@@ -305,7 +304,6 @@ can_move(Color, P0, P) :-
     )
   ).
 
-
 % under_checkmate(+Color)
 under_checkmate(Color) :-
   under_check(Color),
@@ -316,24 +314,22 @@ under_stall(Color) :-
   not (under_check(Color)),
   not (can_move(Color)).
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                            Some useful stuff                               %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%% Pawns must promote when reaching the last row.
 % must_promote(+Piece, +P)
-must_promote(Piece, P) :-  % Pawns must promote when reaching the last row.
+must_promote(Piece, P) :-
   pawn(Piece),
-  last_row(P).
+  team(Piece, Color),
+  last_row(P, Color).
 
-% legal_promotion(+Piece, +To_piece)
-legal_promotion(Piece, To_piece) :-  % Promotion can be to a queen, a knight, a rook or a bishop of the same team.
+% Pawns can promote to a queen, a knight, a bishop or a rook of the same team.
+% legal_promotion(+Piece, ?To_piece)
+legal_promotion(Piece, To_piece) :-
   allies(To_piece),
-  (rook(To_piece); knight(To_piece); bishop(To_piece); queen(To_piece)).
+  (queen(To_piece); knight(To_piece); bishop(To_piece); rook(To_piece)).
 
-% last_row(?Row)
-last_row(Row) :- player(white), Row = 8.  %% The 8th row is the last one for the white player.
-last_row(Row) :- player(black), Row = 1.  %% The 1st row is the last one for the black player.
+% last_row(+P, ?Color)
+last_row(point(_,7), white).
+last_row(point(_,0), black).
 
 % empty_or_enemy(+Piece1, ?Piece2)
 empty_or_enemy(Piece1, Piece2) :- enemies(Piece1, Piece2).
@@ -348,6 +344,14 @@ empty_cells([]).
 empty_cells([Point | Points]) :- 
   cell(Point, e),
   empty_cells(Points).
+
+% only_kings_on_board
+only_kings_on_board :-
+  not cell(_,wp), not cell(_,bp), % no pawns
+  not cell(_,wr), not cell(_,br), % no rooks
+  not cell(_,wn), not cell(_,bn), % no knights
+  not cell(_,wb), not cell(_,bb), % no bishops
+  not cell(_,wq), not cell(_,bq). % no queens
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
