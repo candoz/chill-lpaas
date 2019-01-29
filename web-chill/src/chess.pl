@@ -29,7 +29,7 @@ history([]).
 %%% where each sub-list is composed by X coordinate, Y coordinate and the respective Content.
 % chessboard(-Board)
 chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y), Content), Board).
-chessboard(Board, json_format) :- 
+chessboard_json(Board) :- 
   findall(
     [X,Y,Result],
     (cell(point(X,Y),Content), text_concat('\"',Content, Temp), text_concat(Temp, '\"', Result)),
