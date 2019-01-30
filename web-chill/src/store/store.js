@@ -13,7 +13,7 @@ const ResultStatus = {
   BLACK_WON: 'black',
   WHITE_WON: 'white',
   DRAW: 'draw',
-  UNDER_CHECK: 'under check',
+  UNDER_CHECK: 'under check'
 }
 
 const ChessPiece = {

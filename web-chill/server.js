@@ -1,14 +1,16 @@
-const express = require('express');
-const path = require('path');
-const serveStatic = require('serve-static');
-const fs = require('fs');
-const axios = require('axios');
-const boom = require('boom');
+"use strict"
+const express = require('express')
+const path = require('path')
+const serveStatic = require('serve-static')
+const fs = require('fs')
+const axios = require('axios')
+const boom = require('boom')
+const bodyParser = require('body-parser')
 
 const lpaasUrl = 'http://localhost:8080/lpaas'
-const theoryPath = '/theories/chill'
-const goalPath = '/goals'
-const solutionPath = '/solutions'
+const theoryPath = lpaasUrl + '/theories/chill'
+const goalPath = lpaasUrl + '/goals'
+const solutionPath = lpaasUrl + '/solutions'
 const chessboardGoalUrl = goalPath + '/chessboard/'
 const chillPrologPath = 'src/chess.pl'
 const headers = {
@@ -21,9 +23,10 @@ const solutionsHeaders = {
 }
 const pieces = ["wp","wr","wn","wb","wq","wk","bp","br","bn","bb","bq","bk","e"]
 
-app = express();
-app.use(serveStatic(__dirname + "/dist"));
-
+let app = express()
+app.use(serveStatic(__dirname + "/dist"))
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 /* INIT CHESSBOARD / NEW MATCH */
 app.post('/chessboard', function(req, res, next) {
@@ -31,6 +34,42 @@ app.post('/chessboard', function(req, res, next) {
 })
 
 /* MOVE */
+app.post('/move', function(req, res, next) {
+
+  let goalName = 'move'
+
+  let body = 'do_move(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
+  console.log(body)
+
+  axios.post(goalPath, body, {params: { name: goalName }, headers: headers})
+  .then(goalResponse => {
+    body = {
+      goals: lpaasUrl+goalResponse.data.link,
+      theory: theoryPath,
+    }
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders, 
+      params: {
+        skip: 0,
+        limit: 1
+      }
+    })
+    .then(solutionResponse => {
+      deleteLPaaSEntity(goalPath+'/'+goalName)
+      deleteLPaaSEntity(lpaasUrl+solutionResponse.data.link)
+      res.send(solutionResponse.data.solutions)
+    })
+    .catch(solutionError => {
+      deleteLPaaSEntity(goalPath+'/'+goalName)
+      res.send(solutionError)
+    })
+  })
+  .catch(goalError => {
+    deleteLPaaSEntity(goalPath+'/'+goalName)
+    res.send(goalError)
+  })
+
+})
 
 /* MOVE AND PROMOTE */
 
@@ -40,9 +79,9 @@ app.post('/chessboard', function(req, res, next) {
 app.get('/chessboard', function(req, res, next) {
   let body = {
     goals: lpaasUrl+chessboardGoalUrl,
-    theory: lpaasUrl+theoryPath,
+    theory: theoryPath,
   }
-  axios.post(lpaasUrl+solutionPath, body, {
+  axios.post(solutionPath, body, {
     headers: solutionsHeaders, 
     params: {
       skip: 0,
@@ -53,7 +92,8 @@ app.get('/chessboard', function(req, res, next) {
     let parsedChessboard = response.data.solutions.toString()
       .replace('(','').replace(')','').replace('chessboard','')
       
-    for (piece of pieces) {
+      console.log(parsedChessboard)
+    for (let piece of pieces) {
       parsedChessboard = parsedChessboard.split(piece).join("\""+piece+"\"")
     }
 
@@ -82,10 +122,10 @@ function loadTheoryToLPaaS (callback, errorHandler) {
 
     let body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
     
-    axios.post(lpaasUrl+theoryPath, body, {headers: headers})
+    axios.post(theoryPath, body, {headers: headers})
     .then(theoryResponse => {
       body = 'chessboard(R)'
-      axios.post(lpaasUrl+goalPath, body, {params: { name: 'chessboard' }, headers: headers})
+      axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
       .then(goalResponse => {
         callback(goalResponse)
       })
@@ -104,4 +144,10 @@ function createChessboardMatrix () {
     }
   }
   return matrix
+}
+
+function deleteLPaaSEntity(url) {
+  axios.delete(url)
+  .then(response => console.log('Deleted ' + url))
+  .catch(error => console.log('Problem encountered while deleting ' + url))
 }
