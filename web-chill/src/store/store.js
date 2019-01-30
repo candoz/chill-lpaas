@@ -12,7 +12,8 @@ const ResultStatus = {
   STILL_GAMING: 'still gaming',
   BLACK_WON: 'black',
   WHITE_WON: 'white',
-  DRAW: 'draw'
+  DRAW: 'draw',
+  UNDER_CHECK: 'under check',
 }
 
 const ChessPiece = {
