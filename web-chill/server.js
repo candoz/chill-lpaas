@@ -31,7 +31,7 @@ app.use(bodyParser.json())
 
 app.post('/move', (req, res, next) => {
   let goalName = 'move'
-  let body = 'do_move(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
+  let body = 'do_move(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ')'
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
@@ -41,7 +41,7 @@ app.post('/move', (req, res, next) => {
 
 app.post('/move/withpromotion', (req, res, next) => {
   let goalName = 'moveAndPromote'
-  let body = 'do_move_and_promote(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ',' + req.body.promotion + ')'
+  let body = 'do_move_and_promote(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ',' + req.body.promotion + ')'
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
@@ -51,7 +51,7 @@ app.post('/move/withpromotion', (req, res, next) => {
 
 app.post('/move/longcastle', (req, res, next) => {
   let goalName = 'longcastle'
-  let body = 'do_long_castle(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
+  let body = 'do_long_castle(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ')'
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
@@ -61,7 +61,7 @@ app.post('/move/longcastle', (req, res, next) => {
 
 app.post('/move/shortcastle', (req, res, next) => {
   let goalName = 'shortcastle'
-  let body = 'do_short_castle(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
+  let body = 'do_short_castle(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ')'
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
@@ -71,7 +71,7 @@ app.post('/move/shortcastle', (req, res, next) => {
 
 app.get('/move/available', (req, res, next) => {
   let goalName = 'availablemoves'
-  let body = 'available_moves(' + req.body.startPoint + ',R)'
+  let body = 'available_moves(' + wrapCoordinate(req.body.startPoint) + ',R)'
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
     res.send(lpaasResponse)
