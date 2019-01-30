@@ -30,6 +30,20 @@ history([]).
 % chessboard(-Board)
 chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y), Content), Board).
 
+available_moves(Piece, P0, P_list) :- findall(P, available_move(Piece, P0, P), P_list).
+
+% can_move(+Piece, +P0, ?P)
+available_move(Piece, P0, P) :- legal_move(Piece, P0, P), new_position_not_under_check(Piece, P0, P).
+available_move(Piece, P0, P) :- legal_castle(Piece, P0, P), new_position_not_under_check(Piece, P0, P).
+
+% can_move(+Color)
+can_move(Color) :-
+  team(Ally, Color),
+  cell(P0, Ally),
+  available_move(Ally, P0, _),
+  !. % green cut
+
+
 %%% Move the Piece, if possible, from P0 to P
 % do_move(+Piece, +P0, +P)
 do_move(Piece, P0, P) :-
@@ -39,8 +53,7 @@ do_move(Piece, P0, P) :-
   update_board(
     [cell(P0,Piece), cell(P,P_content)], % things to retract
     [cell(P0,e), cell(P,Piece)]          % things to assert  
-  ),
-  change_turn, !.
+  ).
 
 %%% Move the Piece, if possible, from P0 to P and promote it to Promoted_piece
 % do_move_and_promote(+Piece, +P0, +P, +Promoted_piece)
@@ -52,29 +65,61 @@ do_move_and_promote(Piece, P0, P, Promoted_piece) :-
   update_board(
     [cell(P0, Piece), cell(P, P_content)],  % things to retract
     [cell(P0, e), cell(P, Promoted_piece)]  % things to assert  
-  ),
-  change_turn, !.
+  ).
 
-% do_castle()
+do_short_castle(Piece, P0, P2) :-
+  short_castle_integrity_check(Piece, P0, P),
+  steps_east(P0, P1, 1),
+  steps_east(P0, P2, 2), % where the king wants to go
+  steps_east(P0, P3, 3), % where the allied tower is
+  update_board_for_castle(Piece, P0, P1, P2, P3).
 
-% check_result(?R)
-check_result(win(white)) :- gave_up(black), !.
-check_result(win(black)) :- gave_up(white), !.
-check_result(win(white)) :- turn(black), under_checkmate(black), !.
-check_result(win(black)) :- turn(white), under_checkmate(white), !.
-check_result(draw) :- agreed_to_draw(white), !.
-check_result(draw) :- agreed_to_draw(black), !.
-check_result(draw) :- turn(C), under_stall(C), !.
-check_result(under_check) :- turn(C), under_check(C), !.
-check_result(nothing).
+do_long_castle(Piece, P0, P2) :-
+  long_castle_integrity_check(Piece, P0, P),
+  steps_west(P0, P1, 1),
+  steps_west(P0, P2, 2), % where the king wants to go
+  steps_west(P0, P4, 4), % where the allied tower is
+  update_board_for_castle(Piece, P0, P1, P2, P4). 
+ 
+update_board_for_castle(King, P0, P1, P2, PR) :-
+  cell(PR, Rook),
+  update_board(
+    [cell(P0,King), cell(P1,e), cell(P2,e), cell(PR,Rook)], % things to retract
+    [cell(P0,e), cell(P1,Rook), cell(P2,King), cell(PR,e)]  % things to assert  
+  ).
+
+
+% result(?R)
+result(win(white)) :- gave_up(black), !.
+result(win(white)) :- turn(black), under_checkmate(black), !.
+result(win(black)) :- gave_up(white), !.
+result(win(black)) :- turn(white), under_checkmate(white), !.
+result(draw) :- agreed_to_draw(white), !.
+result(draw) :- agreed_to_draw(black), !.
+result(draw) :- turn(C), under_stall(C), !.
+result(draw) :- only_kings_on_board, !.
+result(under_check) :- turn(C), under_check(C), !.
+result(nothing).
 
 % move_integrity_check(+Piece, +P0, +P)
 move_integrity_check(Piece, P0, P) :-
+  (result(nothing); result(under_check)),
   cell(P0, Piece),
   turn(Color),
   team(Piece, Color),
   legal_move(P0, P),
-  (check_result(nothing); check_result(under_check)).
+  new_position_not_under_check(Piece, P0, P).
+
+% castle_integrity_check(+Piece, +P0, +P)
+castle_integrity_check(Piece, P0, P) :-
+  result(nothing),
+  cell(P0, Piece),
+  turn(Color),
+  team(Piece, Color),
+  king(Piece),
+  legal_castle(P0, P),
+  new_position_not_under_check(Piece, P0, P).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%          Private functionalities for history and staus update              %%
@@ -97,9 +142,11 @@ update_board(To_retract, To_assert) :-
   assert_these(To_assert),
   retract(history(Old_history)),
   append([(To_retract, To_assert)], Old_history, Updated_history),
-  assert(history(Updated_history)).
+  assert(history(Updated_history)),
+  change_turn.
+  
 
-undo_last_move :-
+undo_last_update :-
   retract(history([(Last_retracted_list, Last_asserted_list) | Older_history])),
   retract_these(Last_asserted_list),
   assert_these(Last_retracted_list),
@@ -109,10 +156,11 @@ undo_last_move :-
 first_move(P) :- 
   history(H),
   first_move(P, H).
+  
 first_move(P, []).
 first_move(P, [(Last_retracted_list, Last_asserted_list) | Older_history]) :- 
-  not(member(cell(P, _), Last_retracted_list)),
-  not(member(cell(P, _), Last_asserted_list)),
+  not member(cell(P, _), Last_retracted_list),
+  not member(cell(P, _), Last_asserted_list),
   first_move(P, Older_history).
 
 retract_these([]).
@@ -221,29 +269,71 @@ legal_move(P0, P) :-
 
 %%%%%%%% SPECIAL MOVES: CASTLING %%%%%%%%
 
-%% legal_castling
-%legal_castling(P0, P2) :- 
-%  cell(P0, P0_content),
-%  king(P0_content),
-%  first_move(P0),
-%  not under_enemy_attack(P0),
-%  ( 
-%    ( % short castling
-%      steps_east(P0, P2, 2), % where the king wants to go
-%      steps_east(P0, P1, 1),
-%      steps_east(P0, P3, 3), % east rook position
-%      cell(P2, e),
-%      cell(P1, e),
-%      first_move(P3),
-%      assert()
-%      not under_enemy_attack(P2),
-%      not under_enemy_attack(P1)
-%    );
-%    ( % long castling
-%      steps_west(P0, P, 2),
-%      cell(P, e),
-%    )
-%  ).
+% legal_short_castle
+legal_short_castle(P0, P2) :- 
+  cell(P0, P0_content),
+  king(P0_content),
+  first_move(P0),
+  not under_enemy_attack(P0),
+  steps_east(P0, P2, 2), % where the king wants to go
+  steps_east(P0, P1, 1),
+  steps_east(P0, P3, 3), % east rook position
+  cell(P1, e),
+  cell(P2, e),
+  first_move(P3),
+  update_board([cell(P0,P0_content)], [cell(P1,e)]),
+  (
+    (
+      not under_enemy_attack(P1),
+      undo_last_update,
+      true
+    );
+    (
+      under_enemy_attack(P1),
+      undo_last_update,
+      fail
+    )
+  ).
+
+% legal_long_castling
+legal_long_castle(P0, P2) :- 
+  cell(P0, P0_content),
+  king(P0_content),
+  first_move(P0),
+  not under_enemy_attack(P0),
+  steps_west(P0, P2, 2), % where the king wants to go
+  steps_west(P0, P1, 1),
+  steps_west(P0, P3, 3),
+  steps_east(P0, P4, 4), % east rook position
+  cell(P1, e),
+  cell(P2, e),
+  cell(P3, e),
+  first_move(P4),
+  update_board([cell(P0,P0_content)], [cell(P1,e)]),
+  (
+    (
+      not under_enemy_attack(P1),
+      undo_last_update,
+      (
+        update_board([cell(P0,P0_content)], [cell(P2,e)]),
+        (
+          not under_enemy_attack(P2),
+          undo_last_update,
+          true
+        );
+        (
+          under_enemy_attack(P2),
+          undo_last_update,
+          fail
+        )
+      )
+    );
+    (
+      under_enemy_attack(P1),
+      undo_last_update,
+      fail
+    )
+  ).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -265,43 +355,21 @@ under_check(Color) :-
   cell(P, K),
   under_enemy_attack(P),
   !.  % green cut
-
-% can_move(+Color)
-can_move(Color) :-
-  team(Allied_piece, Color),
-  cell(P0, Allied_piece),
-  legal_move(P0, P),
+  
+new_position_not_under_check(Piece, P0, P) :-
+  team(Piece, Color),
+  cell(P0, Piece),
   cell(P, P_content),
-  do_move(cell(P0, Allied_piece), cell(P, P_content)),  % modifying the knowledge base! (and changing turn...)
+  update_board([cell(P0,Piece), cell(P,P_content)], [cell(P0,e), cell(P,Piece)]),
   (
     (
       not(under_check(Color)),
-      undo_last_move,  % modifying the knowledge base! (and changing turn...)
-      true
-    );
-    (
-      under_check(Color),  % necessary ?
-      undo_last_move,  % modifying the knowledge base! (and changing turn...)
-      fail
-    )
-  ), !.
-
-% can_move(+Color, -P0, -P)
-can_move(Color, P0, P) :-
-  team(Allied_piece, Color),
-  cell(P0, Allied_piece),
-  legal_move(P0, P),
-  cell(P, P_content),
-  do_move(cell(P0, Allied_piece), cell(P, P_content)),  % modifying the knowledge base! (and changing turn...)
-  (
-    (
-      not(under_check(Color)),
-      undo_last_move,  % modifying the knowledge base! (and changing turn...)
+      undo_last_update,  % modifying the knowledge base! (and changing turn...)
       true
     );
     (
       under_check(Color),
-      undo_last_move,  % modifying the knowledge base! (and changing turn...)
+      undo_last_update,  % modifying the knowledge base! (and changing turn...)
       fail
     )
   ).
@@ -309,12 +377,12 @@ can_move(Color, P0, P) :-
 % under_checkmate(+Color)
 under_checkmate(Color) :-
   under_check(Color),
-  not (can_move(Color)).
+  not can_move(Color).
   
 % under_stall(+Color)
 under_stall(Color) :-
-  not (under_check(Color)),
-  not (can_move(Color)).
+  not under_check(Color),
+  not can_move(Color).
 
 %%% Pawns must promote when reaching the last row.
 % must_promote(+Piece, +P)
@@ -326,7 +394,7 @@ must_promote(Piece, P) :-
 % Pawns can promote to a queen, a knight, a bishop or a rook of the same team.
 % legal_promotion(+Piece, ?To_piece)
 legal_promotion(Piece, To_piece) :-
-  allies(To_piece),
+  allies(Piece, To_piece),
   (queen(To_piece); knight(To_piece); bishop(To_piece); rook(To_piece)).
 
 % last_row(+P, ?Color)
