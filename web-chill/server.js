@@ -71,16 +71,15 @@ app.post('/move/shortcastle', (req, res, next) => {
 
 app.get('/move/available', (req, res, next) => {
   let goalName = 'availablemoves'
-  let body = 'available_moves(' + req.body.piece + ',' + req.body.startPoint + ',R)'
+  let body = 'available_moves(' + req.body.startPoint + ',R)'
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
-   // parsare risposta
     res.send(lpaasResponse)
   })
 })
 
 app.post('/giveup', (req, res, next) => {
-  let goalName = 'draw'
+  let goalName = 'giveup'
   let body = 'give_up('+ req.body.playerColor + ')'
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
@@ -109,7 +108,7 @@ app.put('/draw/accept', (req, res, next) => {
 
 app.get('/result', (req, res, next) => {
   let goalName = 'result'
-  let body = 'check_result(R)'
+  let body = 'result(R)'
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
     let regex = /\(([^()]+)\)/g
@@ -128,7 +127,20 @@ app.get('/turn', (req, res, next) => {
 })
 
 app.post('/chessboard', (req, res, next) => {
-  loadTheoryToLPaaS(result => res.sendStatus(200), error => next(boom.serverUnavailable(error)))
+  axios.delete(theoryPath)
+  .then(response => {
+    console.log("Deleted Chill Theory")
+    axios.delete(chessboardGoalUrl)
+    .then(goalResponse => {
+      console.log("Deleted Chessboard Goal")
+      loadTheoryToLPaaS(result => res.sendStatus(200), error => next(boom.serverUnavailable(error)))
+    })
+    .catch(goalError => {
+      next(boom.serverUnavailable(error))
+    })
+  }).catch(error => {
+    next(boom.serverUnavailable(error))
+  })
 })
 
 app.get('/chessboard', (req, res, next) => {
@@ -152,7 +164,7 @@ app.get('/chessboard', (req, res, next) => {
     let chessboardMatrix = createChessboardMatrix()
     JSON.parse(parsedChessboard).forEach(element => {
       chessboardMatrix[element[0]][element[1]] = element[2]
-    });
+    })
     res.send(chessboardMatrix)
   }).catch(error => next(boom.badRequest(error)))
 })
@@ -160,9 +172,9 @@ app.get('/chessboard', (req, res, next) => {
 loadTheoryToLPaaS(response => console.log("Chill Theory Loaded to "+lpaasUrl), error => console.log('Failed to load theory to LPaaS'))
 
 const port = process.env.PORT || 5000;
-app.listen(port);
+app.listen(port)
 
-console.log('Chill Web Server Started on port: ' + port);
+console.log('Chill Web Server Started on port: ' + port)
 
 function loadTheoryToLPaaS (callback, errorHandler) {
   fs.readFile(chillPrologPath, 'utf8', (err, parsed) => {
@@ -197,6 +209,10 @@ function deleteLPaaSEntity (url) {
   axios.delete(url)
   .then(response => console.log('Deleted ' + url))
   .catch(error => console.log('Problem encountered while deleting ' + url))
+}
+
+function wrapCoordinate (coordArray) {
+  return 'point(' + coordArray[0] + ',' + coordArray[1] + ')'
 }
 
 function querySolutionLPaaS (goalName, prologBody, callback) { 
