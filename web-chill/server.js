@@ -22,59 +22,116 @@ const solutionsHeaders = {
   'Accept': 'application/json'
 }
 const pieces = ["wp","wr","wn","wb","wq","wk","bp","br","bn","bb","bq","bk","e"]
+let drawProposalActive = false
 
 let app = express()
 app.use(serveStatic(__dirname + "/dist"))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-/* INIT CHESSBOARD / NEW MATCH */
-app.post('/chessboard', function(req, res, next) {
-  loadTheoryToLPaaS(result => res.sendStatus(200), error => next(boom.serverUnavailable(error)))
-})
-
-/* MOVE */
-app.post('/move', function(req, res, next) {
-
+app.post('/move', (req, res, next) => {
   let goalName = 'move'
   let body = 'do_move(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
+  drawProposalActive = false
 
-  querySolutionLPaaS(goalName, body, function(lpaasResponse) {
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
     res.send(lpaasResponse)
   })
 })
 
-/* MOVE AND PROMOTE */
+app.post('/move/withpromotion', (req, res, next) => {
+  let goalName = 'moveAndPromote'
+  let body = 'do_move_and_promote(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ',' + req.body.promotion + ')'
+  drawProposalActive = false
 
-/* CASTLE */
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
+    res.send(lpaasResponse)
+  })
+})
 
-/* CHECK RESULT */
-app.get('/result', function(req, res, next) {
+app.post('/move/longcastle', (req, res, next) => {
+  let goalName = 'longcastle'
+  let body = 'do_long_castle(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
+  drawProposalActive = false
 
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
+    res.send(lpaasResponse)
+  })
+})
+
+app.post('/move/shortcastle', (req, res, next) => {
+  let goalName = 'shortcastle'
+  let body = 'do_short_castle(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
+  drawProposalActive = false
+
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
+    res.send(lpaasResponse)
+  })
+})
+
+app.get('/move/available', (req, res, next) => {
+  let goalName = 'availablemoves'
+  let body = 'available_moves(' + req.body.piece + ',' + req.body.startPoint + ',R)'
+
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
+   // parsare risposta
+    res.send(lpaasResponse)
+  })
+})
+
+app.post('/giveup', (req, res, next) => {
+  let goalName = 'draw'
+  let body = 'give_up('+ req.body.playerColor + ')'
+
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
+    res.send(lpaasResponse)
+  })
+})
+
+app.put('/draw/propose', (req, res, next) => {
+  drawProposalActive = true // salvare chi propone ???
+  res.sendStatus(200)
+})
+
+app.put('/draw/accept', (req, res, next) => {
+  if (drawProposalActive) {
+    let goalName = 'draw'
+    let body = 'agree_to_draw('+ req.body.playerColor + ')'
+
+    querySolutionLPaaS(goalName, body, lpaasResponse => {
+      drawProposalActive = false
+      res.send(lpaasResponse)
+    })
+  } else {
+    next(boom.badRequest('A draw proposal is not active'))
+  }
+})
+
+app.get('/result', (req, res, next) => {
   let goalName = 'result'
   let body = 'check_result(R)'
 
-  querySolutionLPaaS(goalName, body, function(lpaasResponse) {
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
     let regex = /\(([^()]+)\)/g
     res.send(regex.exec(lpaasResponse)[1])
   })
 })
 
-/* GET TURN */
-app.get('/turn', function(req, res, next) {
-  
+app.get('/turn', (req, res, next) => {
   let goalName = 'turn'
   let body = 'turn(C)'
 
-  querySolutionLPaaS(goalName, body, function(lpaasResponse) {
+  querySolutionLPaaS(goalName, body, lpaasResponse => {
     let regex = /\(([^()]+)\)/g
     res.send(regex.exec(lpaasResponse)[1])
   })
 })
 
-/* GET CHESSBOARD */
-app.get('/chessboard', function(req, res, next) {
-  
+app.post('/chessboard', (req, res, next) => {
+  loadTheoryToLPaaS(result => res.sendStatus(200), error => next(boom.serverUnavailable(error)))
+})
+
+app.get('/chessboard', (req, res, next) => {
   let body = {
     goals: lpaasUrl+chessboardGoalUrl,
     theory: theoryPath,
@@ -92,17 +149,15 @@ app.get('/chessboard', function(req, res, next) {
     for (let piece of pieces) {
       parsedChessboard = parsedChessboard.split(piece).join("\""+piece+"\"")
     }
-
     let chessboardMatrix = createChessboardMatrix()
     JSON.parse(parsedChessboard).forEach(element => {
       chessboardMatrix[element[0]][element[1]] = element[2]
     });
-  
     res.send(chessboardMatrix)
   }).catch(error => next(boom.badRequest(error)))
 })
 
-loadTheoryToLPaaS(response => console.log("Chill Theory Loaded to "+lpaasUrl), error => console.log(error))
+loadTheoryToLPaaS(response => console.log("Chill Theory Loaded to "+lpaasUrl), error => console.log('Failed to load theory to LPaaS'))
 
 const port = process.env.PORT || 5000;
 app.listen(port);
@@ -110,9 +165,8 @@ app.listen(port);
 console.log('Chill Web Server Started on port: ' + port);
 
 function loadTheoryToLPaaS (callback, errorHandler) {
-  fs.readFile(chillPrologPath, 'utf8', function(err, parsed) {
+  fs.readFile(chillPrologPath, 'utf8', (err, parsed) => {
     if (err) throw err
-
     let body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
     
     axios.post(theoryPath, body, {headers: headers})
