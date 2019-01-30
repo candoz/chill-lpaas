@@ -37,46 +37,44 @@ app.post('/chessboard', function(req, res, next) {
 app.post('/move', function(req, res, next) {
 
   let goalName = 'move'
-
   let body = 'do_move(' + req.body.piece + ',' + req.body.startPoint + ',' + req.body.endPoint + ')'
-  console.log(body)
 
-  axios.post(goalPath, body, {params: { name: goalName }, headers: headers})
-  .then(goalResponse => {
-    body = {
-      goals: lpaasUrl+goalResponse.data.link,
-      theory: theoryPath,
-    }
-    axios.post(solutionPath, body, {
-      headers: solutionsHeaders, 
-      params: {
-        skip: 0,
-        limit: 1
-      }
-    })
-    .then(solutionResponse => {
-      deleteLPaaSEntity(goalPath+'/'+goalName)
-      deleteLPaaSEntity(lpaasUrl+solutionResponse.data.link)
-      res.send(solutionResponse.data.solutions)
-    })
-    .catch(solutionError => {
-      deleteLPaaSEntity(goalPath+'/'+goalName)
-      res.send(solutionError)
-    })
+  querySolutionLPaaS(goalName, body, function(lpaasResponse) {
+    res.send(lpaasResponse)
   })
-  .catch(goalError => {
-    deleteLPaaSEntity(goalPath+'/'+goalName)
-    res.send(goalError)
-  })
-
 })
 
 /* MOVE AND PROMOTE */
 
 /* CASTLE */
 
+/* CHECK RESULT */
+app.get('/result', function(req, res, next) {
+
+  let goalName = 'result'
+  let body = 'check_result(R)'
+
+  querySolutionLPaaS(goalName, body, function(lpaasResponse) {
+    let regex = /\(([^()]+)\)/g
+    res.send(regex.exec(lpaasResponse)[1])
+  })
+})
+
+/* GET TURN */
+app.get('/turn', function(req, res, next) {
+  
+  let goalName = 'turn'
+  let body = 'turn(C)'
+
+  querySolutionLPaaS(goalName, body, function(lpaasResponse) {
+    let regex = /\(([^()]+)\)/g
+    res.send(regex.exec(lpaasResponse)[1])
+  })
+})
+
 /* GET CHESSBOARD */
 app.get('/chessboard', function(req, res, next) {
+  
   let body = {
     goals: lpaasUrl+chessboardGoalUrl,
     theory: theoryPath,
@@ -87,12 +85,10 @@ app.get('/chessboard', function(req, res, next) {
       skip: 0,
       limit: 1
     }
-  })
-  .then(response => {
+  }).then(response => {
     let parsedChessboard = response.data.solutions.toString()
       .replace('(','').replace(')','').replace('chessboard','')
       
-      console.log(parsedChessboard)
     for (let piece of pieces) {
       parsedChessboard = parsedChessboard.split(piece).join("\""+piece+"\"")
     }
@@ -103,11 +99,8 @@ app.get('/chessboard', function(req, res, next) {
     });
   
     res.send(chessboardMatrix)
-  })
-  .catch(error => next(boom.badRequest(error)))
+  }).catch(error => next(boom.badRequest(error)))
 })
-
-/* CHECK RESULT */
 
 loadTheoryToLPaaS(response => console.log("Chill Theory Loaded to "+lpaasUrl), error => console.log(error))
 
@@ -146,8 +139,39 @@ function createChessboardMatrix () {
   return matrix
 }
 
-function deleteLPaaSEntity(url) {
+function deleteLPaaSEntity (url) {
   axios.delete(url)
   .then(response => console.log('Deleted ' + url))
   .catch(error => console.log('Problem encountered while deleting ' + url))
+}
+
+function querySolutionLPaaS (goalName, prologBody, callback) { 
+  let body = prologBody
+  axios.post(goalPath, body, {params: { name: goalName }, headers: headers})
+  .then(goalResponse => {
+    body = {
+      goals: lpaasUrl+goalResponse.data.link,
+      theory: theoryPath,
+    }
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders, 
+      params: {
+        skip: 0,
+        limit: 1
+      }
+    })
+    .then(solutionResponse => {
+      deleteLPaaSEntity(goalPath+'/'+goalName)
+      deleteLPaaSEntity(lpaasUrl+solutionResponse.data.link)
+      callback(solutionResponse.data.solutions)
+    })
+    .catch(solutionError => {
+      deleteLPaaSEntity(goalPath+'/'+goalName)
+      callback(solutionError)
+    })
+  })
+  .catch(goalError => {
+    deleteLPaaSEntity(goalPath+'/'+goalName)
+    callback(goalError)
+  })
 }
