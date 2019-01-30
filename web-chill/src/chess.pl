@@ -143,10 +143,10 @@ assert_these([Head | Tail]) :- assert(Head), assert_these(Tail).
 
 % under_enemy_attack(+P)
 under_enemy_attack(P) :-
-  cell(Pi, _),
+  cell(Pi, Pi_content),
 
   legal_move(Pi, P),
-  print(Pi),
+  %DEBUG: print(Pi),
   !.  % green cut
 
 % under_check(+Color)
@@ -157,15 +157,36 @@ under_check(Color) :-
   under_enemy_attack(P),
   !.  % green cut
 
+% under_stall(+Color)
+under_stall(Color) :-
+  not under_check(Color),
+  not can_move(Color).
+
 % under_checkmate(+Color)
 under_checkmate(Color) :-
   under_check(Color),
   not can_move(Color).
 
-% under_stall(+Color)
-under_stall(Color) :-
-  not under_check(Color),
-  not can_move(Color).
+
+new_position_not_under_check(P0, P) :-
+  team(Piece, Color),
+  cell(P0, Piece),
+  cell(P, P_content),
+  update_board([cell(P0,Piece), cell(P,P_content)], [cell(P0,e), cell(P,Piece)]),
+  (
+    (
+      not(under_check(Color)),
+      undo_last_update,  % modifying the knowledge base! (and changing turn...)
+      true,
+      !
+    );
+    (
+      under_check(Color),
+      undo_last_update,  % modifying the knowledge base! (and changing turn...)
+      fail
+    )
+  ).
+
 
 %%% Pawns must promote when reaching the last row.
 % must_promote(+Piece, +P)
@@ -181,24 +202,6 @@ legal_promotion(Piece, To_piece) :-
   (queen(To_piece); knight(To_piece); bishop(To_piece); rook(To_piece)).
 
 
-new_position_not_under_check(Piece, P0, P) :-
-  team(Piece, Color),
-  cell(P0, Piece),
-  cell(P, P_content),
-  update_board([cell(P0,Piece), cell(P,P_content)], [cell(P0,e), cell(P,Piece)]),
-  (
-    (
-      not(under_check(Color)),
-      undo_last_update,  % modifying the knowledge base! (and changing turn...)
-      true
-    );
-    (
-      under_check(Color),
-      undo_last_update,  % modifying the knowledge base! (and changing turn...)
-      fail
-    )
-  ).
-
 % only_kings_on_board
 only_kings_on_board :-
   not cell(_,wp), not cell(_,bp), % no pawns
@@ -211,16 +214,6 @@ only_kings_on_board :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                Specific functionalities for movements                      %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%% Retrieves all the chessboard cells in a list of lists, useful for client requests:
-%%% each sub-list is composed by X coordinate, Y coordinate and the respective Content.
-% chessboard(-Board)
-available_moves(Piece, P0, Coordinates_list) :- findall([X,Y], available_move(Piece, P0, point(X,Y)), Coordinates_list).
-
-% available_move(+Piece, +P0, ?P)
-available_move(Piece, P0, P) :-
-  (legal_move(Piece, P0, P) ; legal_short_castle(Piece, P0, P) ; legal_long_castle(Piece, P0, P)),
-  new_position_not_under_check(Piece, P0, P).
 
 %%% True for every point P of the board still not involved in any movement:
 %%% no piece has moved to or from that point since the beginning of the game.
@@ -244,6 +237,16 @@ can_move(Color) :-
   cell(P0, Ally),
   available_move(Ally, P0, _),
   !. % green cut
+
+% available_move(+Piece, +P0, ?P)
+available_move(P0, P) :-
+  (legal_move(P0, P) ; legal_short_castle(P0, P) ; legal_long_castle(P0, P)),
+  new_position_not_under_check(P0, P).
+
+%%% Retrieves all the chessboard cells in a list of lists, useful for client requests:
+%%% each sub-list is composed by X coordinate, Y coordinate and the respective Content.
+% chessboard(-Board)
+available_moves(P0, Coordinates_list) :- findall([X,Y], available_move(P0, point(X,Y)), Coordinates_list).
 
 
 %%% Move the Piece, if possible, from P0 to P
@@ -291,7 +294,7 @@ move_integrity_check(Piece, P0, P) :-
   turn(Color),
   team(Piece, Color),
   legal_move(P0, P),
-  new_position_not_under_check(Piece, P0, P).
+  new_position_not_under_check(P0, P).
 
 % castle_integrity_check(+Piece, +P0, +P)
 castle_integrity_check(Piece, P0, P) :-
@@ -301,7 +304,7 @@ castle_integrity_check(Piece, P0, P) :-
   team(Piece, Color),
   king(Piece),
   legal_castle(P0, P),
-  new_position_not_under_check(Piece, P0, P).
+  new_position_not_under_check(P0, P).
 
 update_board_for_castle(King, P0, P1, P2, PR) :-
   cell(PR, Rook),
@@ -312,12 +315,12 @@ update_board_for_castle(King, P0, P1, P2, PR) :-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                Legal moves by the book (for every piece)                   %%
+%%            Standard legal moves by the book (for every piece)              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % legal_move(+P0, ?P))
 
-%%% Pawn legal move
+%%% Pawn
 legal_move(P0, P) :-
   cell(P0, P0_content),
   pawn(P0_content),
@@ -337,7 +340,7 @@ legal_move(P0, P) :-
     )
   ).
 
-%%% Knight legal move
+%%% Knight
 legal_move(P0, P) :-
   cell(P0, P0_content),
   knight(P0_content),
@@ -345,7 +348,7 @@ legal_move(P0, P) :-
   cell(P, P_content),
   empty_or_enemy(P0_content, P_content).
 
-%%% Bishop legal move
+%%% Bishop
 legal_move(P0, P) :-
   cell(P0, P0_content),
   bishop(P0_content),
@@ -354,7 +357,7 @@ legal_move(P0, P) :-
   empty_or_enemy(P0_content, P_content),
   no_pieces_interposed(P0, P).
 
-%%% Rook legal move
+%%% Rook
 legal_move(P0, P) :-
   cell(P0, P0_content),
   rook(P0_content),
@@ -363,7 +366,7 @@ legal_move(P0, P) :-
   empty_or_enemy(P0_content, P_content),
   no_pieces_interposed(P0, P).
 
-%%% Queen legal move
+%%% Queen
 legal_move(P0, P) :-
   cell(P0, P0_content),
   queen(P0_content),
@@ -372,7 +375,7 @@ legal_move(P0, P) :-
   empty_or_enemy(P0_content, P_content),
   no_pieces_interposed(P0, P).
 
-%%% King legal move
+%%% King
 legal_move(P0, P) :-
   cell(P0, P0_content),
   king(P0_content),
@@ -381,9 +384,11 @@ legal_move(P0, P) :-
   empty_or_enemy(P0_content, P_content).
 
 
-%%%%%%%% SPECIAL MOVES: CASTLING %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                        Legal castling by the book                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% legal_short_castle
+% legal_short_castle(+P0, ?P2)
 legal_short_castle(P0, P2) :-
   cell(P0, P0_content),
   king(P0_content),
@@ -400,7 +405,8 @@ legal_short_castle(P0, P2) :-
     (
       not under_enemy_attack(P1),
       undo_last_update,
-      true
+      true,
+      !
     );
     (
       under_enemy_attack(P1),
@@ -409,7 +415,7 @@ legal_short_castle(P0, P2) :-
     )
   ).
 
-% legal_long_castling
+% legal_long_castle(+P0, ?P2)
 legal_long_castle(P0, P2) :-
   cell(P0, P0_content),
   king(P0_content),
@@ -433,7 +439,8 @@ legal_long_castle(P0, P2) :-
         (
           not under_enemy_attack(P2),
           undo_last_update,
-          true
+          true,
+          !
         );
         (
           under_enemy_attack(P2),
@@ -448,6 +455,10 @@ legal_long_castle(P0, P2) :-
       fail
     )
   ).
+
+% legal_castle(P0, P2)
+legal_castle(P0, P2) :- legal_short_castle(P0, P2).
+legal_castle(P0, P2) :- legal_long_castle(P0, P2).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
