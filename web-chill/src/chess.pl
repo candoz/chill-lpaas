@@ -70,7 +70,7 @@ check_result(nothing).
 
 % move_integrity_check(+Piece, +P0, +P)
 move_integrity_check(Piece, P0, P) :-
-  cell(Piece, P0),
+  cell(P0, Piece),
   turn(Color),
   team(Piece, Color),
   legal_move(P0, P),
@@ -221,21 +221,22 @@ legal_move(P0, P) :-
 
 %%%%%%%% SPECIAL MOVES: CASTLING %%%%%%%%
 
-%%% legal_castling
-%legal_castling(P0, P) :- 
+%% legal_castling
+%legal_castling(P0, P2) :- 
 %  cell(P0, P0_content),
 %  king(P0_content),
 %  first_move(P0),
 %  not under_enemy_attack(P0),
 %  ( 
 %    ( % short castling
-%      steps_east(P0, P, 2),
-%      cell(P, e),
-%      not under_enemy_attack(P),
-%      steps_east(P0, P_rook, 3),
-%      first_move(P_rook),
+%      steps_east(P0, P2, 2), % where the king wants to go
 %      steps_east(P0, P1, 1),
+%      steps_east(P0, P3, 3), % east rook position
+%      cell(P2, e),
 %      cell(P1, e),
+%      first_move(P3),
+%      assert()
+%      not under_enemy_attack(P2),
 %      not under_enemy_attack(P1)
 %    );
 %    ( % long castling
