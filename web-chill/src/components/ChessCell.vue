@@ -1,5 +1,6 @@
 <template>
-  <td v-on:click="selectCell" v-bind:class="[color, selected ? 'selected' : '']">
+  <td v-on:click="cellClicked" v-bind:class="[color, selected ? 'selected' : '']">
+    {{this.x}}{{this.y}}
     {{piece}}
   </td>
 </template>
@@ -16,33 +17,32 @@ export default {
   ],
   computed: {
     piece () {
-      return this.$store.state.chessboard[this.x][this.y].piece
+      return this.$store.state.chessboard[this.x][this.y]
     },
     selected () {
-      return this.$store.getters.cellsSelectedInBoard.includes([this.x, this.y])
+      return this.$store.state.selectedPiece != null && 
+        JSON.stringify(this.$store.state.selectedPiece.coordinates) === JSON.stringify([this.x, this.y]) // TODO also same piece
     },
     color () {
       return (this.x + this.y) % 2 === 0 ? 'dark' : 'light'
     }
   },
   methods: {
-    selectCell: function () {
-      let selectedCells = this.$store.getters.cellsSelectedInBoard
-        
-      if (selectedCells.length > 0) {
-        selectedCells.forEach(cell => {
-          this.$store.commit('switchCellSelection',
-            {
-              x: cell.x,
-              y: cell.y
-            })
-        })
-      } else {
-        this.$store.commit('switchCellSelection',
-          {
+    cellClicked: function () {
+      let currentSelection = this.$store.state.selectedPiece
+
+      if (currentSelection == null) {
+        if (this.$store.state.chessboard[this.x][this.y] !== this.$store.state.EMPTY) {
+          this.$store.commit('selectPiece', {
             x: this.x,
             y: this.y
           })
+        }
+      } else {
+        this.$store.commit('deselectPiece')
+        if (currentSelection.color === this.$store.state.playerColor) {
+          // chiamata remota
+        }
       }
     }
   }

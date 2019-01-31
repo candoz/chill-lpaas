@@ -17,21 +17,20 @@ const ResultStatus = {
   UNDER_CHECK: 'under check'
 }
 
-const ChessPiece = {
-  WP: 'wp',
-  WB: 'wb',
-  WN: 'wn',
-  WR: 'wr',
-  WK: 'wk',
-  WQ: 'wq',
-  BP: 'bp',
-  BB: 'bb',
-  BN: 'bn',
-  BR: 'br',
-  BK: 'bk',
-  BQ: 'bq',
-  EMPTY: 'e'
-}
+const ChessPiece = Object.freeze({
+  WP: {rep: 'wp', color: PlayerColor.WHITE},
+  WB: {rep: 'wb', color: PlayerColor.WHITE},
+  WN: {rep: 'wn', color: PlayerColor.WHITE},
+  WR: {rep: 'wr', color: PlayerColor.WHITE},
+  WK: {rep: 'wk', color: PlayerColor.WHITE},
+  WQ: {rep: 'wq', color: PlayerColor.WHITE},
+  BP: {rep: 'bp', color: PlayerColor.BLACK},
+  BB: {rep: 'bb', color: PlayerColor.BLACK},
+  BN: {rep: 'bn', color: PlayerColor.BLACK},
+  BR: {rep: 'br', color: PlayerColor.BLACK},
+  BK: {rep: 'bk', color: PlayerColor.BLACK},
+  BQ: {rep: 'bq', color: PlayerColor.BLACK}
+})
 
 const testChessBoard = createTestChessBoard()
 function createTestChessBoard () {
@@ -40,7 +39,7 @@ function createTestChessBoard () {
     matrix[i] = []
     for (let j = 0; j < 8; j++) {
       matrix[i][j] = {
-        piece: ChessPiece.EMPTY
+        piece: 'e'
       }
     }
   }
@@ -53,16 +52,13 @@ export const store = new Vuex.Store({
     currentTurn: PlayerColor.WHITE,
     playerColor: PlayerColor.WHITE,
     chessboard: testChessBoard,
-    selectedCells: [],
-    result: ResultStatus.STILL_GAMING
+    selectedPiece: null, // { rep: 'pieceRep', color: 'pieceColor', coordinates: ['-1', '-1'] },
+    result: ResultStatus.STILL_GAMING,
+    chessPiecesEnum: ChessPiece,
+    EMPTY: 'e'
   },
   getters: {
-    currentChessboard: (state) => {
-      return state.chessboard
-    },
-    cellsSelectedInBoard: (state) => {
-      return selectedCells
-    }
+
   },
   mutations: {
     setChessboard: (state, payload) => {
@@ -77,14 +73,23 @@ export const store = new Vuex.Store({
     setResult: (state, result) => {
       state.result = result
     },
-    addSelectedCell: (state, cell) => {
-      state.selectedCells.push(cell)
+    selectPiece: (state, payload) => {
+      let representation = state.chessboard[payload.x][payload.y]
+      let color = Object.values(state.chessPiecesEnum).filter(element => element.rep === representation).map(element => element.color).pop()
+      state.selectedPiece = {
+        rep: representation,
+        color: color,
+        coordinates: [payload.x, payload.y]
+      }
+    },
+    deselectPiece: (state) => {
+      state.selectedPiece = null
     }
   },
   actions: {
     setChessboard: (context, url) => {
       axios.get(url).then(response => {
-        context.commit('setChessboard', response)
+        context.commit('setChessboard', response.data)
       }).catch(error => {
         console.log(error)
       })
