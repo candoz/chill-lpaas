@@ -71,9 +71,10 @@ app.post('/move/shortcastle', (req, res, next) => {
 
 app.get('/move/available', (req, res, next) => {
   let goalName = 'availablemoves'
-  let body = 'available_moves(' + wrapCoordinate(req.body.startPoint) + ',R)'
+  let body = 'available_moves_compact(' + wrapCoordinate(req.body.startPoint) + ',R)'
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
+    console.log(lpaasResponse)
     res.send(lpaasResponse)
   })
 })
@@ -183,7 +184,7 @@ function loadTheoryToLPaaS (callback, errorHandler) {
     
     axios.post(theoryPath, body, {headers: headers})
     .then(theoryResponse => {
-      body = 'chessboard(R)'
+      body = 'chessboard_compact(R)'
       axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
       .then(goalResponse => {
         callback(goalResponse)
@@ -237,11 +238,13 @@ function querySolutionLPaaS (goalName, prologBody, callback) {
     })
     .catch(solutionError => {
       deleteLPaaSEntity(goalPath+'/'+goalName)
+      //TODO leggere l'errore di lpaas e mapparlo con un errore per il client
       callback(solutionError)
     })
   })
   .catch(goalError => {
     deleteLPaaSEntity(goalPath+'/'+goalName)
+    //TODO leggere l'errore di lpaas e mapparlo con un errore per il client
     callback(goalError)
   })
 }
