@@ -233,8 +233,8 @@ never_moved(P, [(Last_retracted_list, Last_asserted_list) | Older_history]) :-
 
 % can_move(+Color)
 can_move(Color) :-
-  team(Ally, Color),
   cell(P0, Ally),
+  team(Ally, Color),
   available_move(Ally, P0, _),
   !. % green cut
 
@@ -321,26 +321,31 @@ update_board_for_castle(King, P0, P1, P2, PR) :-
 % legal_move(+P0, ?P))
 
 %%% Pawn
+
 legal_move(P0, P) :-
   cell(P0, P0_content),
   pawn(P0_content),
-  team(P0_content, Color),
-  (
-    ( % A pawn can move one step forward to an empty cell.
-      steps_forward(P0, P, 1, Color), cell(P, e)
-    );
-    ( % A pawn can move two cells ahead if the pawn hasn't moved yet and those two cells are both empty.
-      steps_forward(P0, P, 2, Color), cell(P, e),
-      steps_forward(P0, P1, 1, Color), cell(P1, e),
-      never_moved(P0)
-    );
-    ( % A pawn can move one cell diagonally ahead if there's an enemy piece in the cell of arrival.
-      (steps_forward_right(P0, P, 1, Color), cell(P, P_content) ; steps_forward_left(P0, P, 1, Color), cell(P, P_content)),
-      enemies(P0_content, P_content)
-    )
-  ).
+  legal_pawn_move(P0, P).
+
+legal_pawn_move(P0, P) :-
+  steps_forward(P0, P, 1),
+  cell(P, e).
+
+legal_pawn_move(P0, P) :-
+  never_moved(P0),
+  steps_forward(P0, P, 2),
+  cell(P, e),
+  steps_forward(P0, P1, 1),
+  cell(P1, e).
+
+legal_pawn_move(P0, P) :-
+  ( steps_forward_right(P0, P, 1) ; steps_forward_left(P0, P, 1) ),
+  cell(P0, P0_content),
+  cell(P, P_content),
+  enemies(P0_content, P_content).
 
 %%% Knight
+
 legal_move(P0, P) :-
   cell(P0, P0_content),
   knight(P0_content),
@@ -349,6 +354,7 @@ legal_move(P0, P) :-
   empty_or_enemy(P0_content, P_content).
 
 %%% Bishop
+
 legal_move(P0, P) :-
   cell(P0, P0_content),
   bishop(P0_content),
@@ -358,6 +364,7 @@ legal_move(P0, P) :-
   no_pieces_interposed(P0, P).
 
 %%% Rook
+
 legal_move(P0, P) :-
   cell(P0, P0_content),
   rook(P0_content),
@@ -367,6 +374,7 @@ legal_move(P0, P) :-
   no_pieces_interposed(P0, P).
 
 %%% Queen
+
 legal_move(P0, P) :-
   cell(P0, P0_content),
   queen(P0_content),
@@ -376,6 +384,7 @@ legal_move(P0, P) :-
   no_pieces_interposed(P0, P).
 
 %%% King
+
 legal_move(P0, P) :-
   cell(P0, P0_content),
   king(P0_content),
@@ -407,8 +416,7 @@ legal_short_castle(P0, P2) :-
       undo_last_update,
       true,
       !
-    );
-    (
+    ) ; (
       under_enemy_attack(P1),
       undo_last_update,
       fail
@@ -441,15 +449,13 @@ legal_long_castle(P0, P2) :-
           undo_last_update,
           true,
           !
-        );
-        (
+        ) ; (
           under_enemy_attack(P2),
           undo_last_update,
           fail
         )
       )
-    );
-    (
+    ) ; (
       under_enemy_attack(P1),
       undo_last_update,
       fail
@@ -472,35 +478,43 @@ legal_castle(P0, P2) :- legal_long_castle(P0, P2).
 % steps
 steps_forward(P0, P, Steps, white) :- steps_north(P0, P, Steps).
 steps_forward(P0, P, Steps, black) :- steps_south(P0, P, Steps).
+steps_forward(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_forward(P0, P, Steps, Color).
 
 % steps_backward
 steps_backward(P0, P, Steps, Color) :- Color = white, steps_south(P0, P, Steps).
 steps_backward(P0, P, Steps, Color) :- Color = black, steps_north(P0, P, Steps).
+steps_backward(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_backward(P0, P, Steps, Color).
 
 % steps_right
 steps_right(P0, P, Steps, Color) :- Color = white, steps_east(P0, P, Steps).
 steps_right(P0, P, Steps, Color) :- Color = black, steps_west(P0, P, Steps).
+steps_right(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_right(P0, P, Steps, Color).
 
 % steps_left
 steps_left(P0, P, Steps, Color) :- Color = white, steps_west(P0, P, Steps).
 steps_left(P0, P, Steps, Color) :- Color = black, steps_east(P0, P, Steps).
+steps_left(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_left(P0, P, Steps, Color).
 
 
 % steps_forward_right
 steps_forward_right(P0, P, Steps, Color) :- Color = white, steps_north_east(P0, P, Steps).
 steps_forward_right(P0, P, Steps, Color) :- Color = black, steps_south_west(P0, P, Steps).
+steps_forward_right(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_forward_right(P0, P, Steps, Color).
 
 % steps_forward_left
 steps_forward_left(P0, P, Steps, Color) :- Color = white, steps_north_west(P0, P, Steps).
 steps_forward_left(P0, P, Steps, Color) :- Color = black, steps_south_east(P0, P, Steps).
+steps_forward_left(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_forward_left(P0, P, Steps, Color).
 
 % steps_backward_right
 steps_backward_right(P0, P, Steps, Color) :- Color = white, steps_south_east(P0, P, Steps).
 steps_backward_right(P0, P, Steps, Color) :- Color = black, steps_north_west(P0, P, Steps).
+steps_backward_right(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_backward_right(P0, P, Steps, Color).
 
 % steps_backward_left
 steps_backward_left(P0, P, Steps, Color) :- Color = white, steps_south_west(P0, P, Steps).
 steps_backward_left(P0, P, Steps, Color) :- Color = black, steps_north_east(P0, P, Steps).
+steps_backward_left(P0, P, Steps) :- cell(P0, Piece), team(Piece, Color), steps_backward_left(P0, P, Steps, Color).
 
 
 % last_row(+P, ?Color)
