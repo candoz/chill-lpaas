@@ -129,14 +129,14 @@ undo_last_update :-
   change_turn.
 
 
-% get_last_moved(Points_list)
-get_last_moved([]) :- history([]), !. % green cut
-get_last_moved(Last_asserted_list) :- history([(_, Last_asserted_list) | _]).
+% last_moved(?Points_list)
+last_moved([]) :- history([]), !. % green cut
+last_moved(Last_asserted_list) :- history([(_, Last_asserted_list) | _]).
 
-% get_last_moved_compact(Coordinates_list)
-get_last_moved_compact([]) :- get_last_moved([]).
-get_last_moved_compact([[X1,Y1], [X2,Y2]]) :- get_last_moved([cell(point(X1,Y1),_), cell(point(X2,Y2),_)]).
-get_last_moved_compact([[X1,Y1], [X2,Y2], [X3,Y3], [X4,Y4]]) :- % for castling, where 4 cells are involved
+% last_moved_compact(?Coordinates_list)
+last_moved_compact([]) :- get_last_moved([]).
+last_moved_compact([[X1,Y1], [X2,Y2]]) :- get_last_moved([cell(point(X1,Y1),_), cell(point(X2,Y2),_)]).
+last_moved_compact([[X1,Y1], [X2,Y2], [X3,Y3], [X4,Y4]]) :- % for castling, where 4 cells are involved
   get_last_moved([cell(point(X1,Y1),_), cell(point(X2,Y2),_), cell(point(X3,Y3),_), cell(point(X4,Y4),_)]).
   
 
