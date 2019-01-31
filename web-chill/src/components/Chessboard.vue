@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button v-on:click="initializeChessboard">Click Me!</button>
+    <button v-on:click="chess">Click Me!</button>
     <button v-on:click="switchPlayer">Switch Player</button>
     <table v-if="player=='white'">
       <tr><td>8</td><chess-cell v-for="xRow8 in boardSide" :key="xRow8" :x="xRow8 -1" :y="7"></chess-cell></tr>
@@ -45,8 +45,8 @@ export default {
     }
   },
   methods: {
-    initializeChessboard: function () {
-      this.$store.dispatch('setChessboard', 'url')
+    chess: function () {
+      this.$store.dispatch('setChessboard', 'http://localhost:5000/chessboard')
     },
     switchPlayer: function () {
       this.$store.commit('switchPlayerColor')

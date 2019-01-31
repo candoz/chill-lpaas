@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -39,10 +40,7 @@ function createTestChessBoard () {
     matrix[i] = []
     for (let j = 0; j < 8; j++) {
       matrix[i][j] = {
-        x: i,
-        y: j,
-        piece: ChessPiece.EMPTY,
-        selected: false
+        piece: ChessPiece.EMPTY
       }
     }
   }
@@ -54,7 +52,8 @@ export const store = new Vuex.Store({
   state: {
     currentTurn: PlayerColor.WHITE,
     playerColor: PlayerColor.WHITE,
-    chessboard: createTestChessBoard(),
+    chessboard: testChessBoard,
+    selectedCells: [],
     result: ResultStatus.STILL_GAMING
   },
   getters: {
@@ -62,7 +61,7 @@ export const store = new Vuex.Store({
       return state.chessboard
     },
     cellsSelectedInBoard: (state) => {
-      return state.chessboard.flat().filter(cell => cell.selected)
+      return selectedCells
     }
   },
   mutations: {
@@ -78,16 +77,18 @@ export const store = new Vuex.Store({
     setResult: (state, result) => {
       state.result = result
     },
-    switchCellSelection: (state, payload) => {
-      state.chessboard[payload.x][payload.y].selected = state.chessboard[payload.x][payload.y].selected !== true
+    addSelectedCell: (state, cell) => {
+      state.selectedCells.push(cell)
     }
   },
   actions: {
     setChessboard: (context, url) => {
-      setTimeout(function () {
-        // ask to server the current chessboard state insted timeout function
-        context.commit('setChessboard', testChessBoard)
-      }, 100)
+      axios.get(url).then(response => {
+        context.commit('setChessboard', response)
+      }).catch(error => {
+        console.log(error)
+      })
     }
+    // POLLING risultato, turno, scacchiera
   }
 })

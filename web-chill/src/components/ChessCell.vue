@@ -19,7 +19,7 @@ export default {
       return this.$store.state.chessboard[this.x][this.y].piece
     },
     selected () {
-      return this.$store.state.chessboard[this.x][this.y].selected
+      return this.$store.getters.cellsSelectedInBoard.includes([this.x, this.y])
     },
     color () {
       return (this.x + this.y) % 2 === 0 ? 'dark' : 'light'
@@ -27,9 +27,8 @@ export default {
   },
   methods: {
     selectCell: function () {
-      // TODO Check if piece owner
       let selectedCells = this.$store.getters.cellsSelectedInBoard
-      console.log(selectedCells)
+        
       if (selectedCells.length > 0) {
         selectedCells.forEach(cell => {
           this.$store.commit('switchCellSelection',

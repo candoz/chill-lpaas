@@ -157,7 +157,7 @@ app.get('/chessboard', (req, res, next) => {
     }
   }).then(response => {
     let parsedChessboard = response.data.solutions.toString()
-      .replace('(','').replace(')','').replace('chessboard','')
+      .replace('(','').replace(')','').replace('chessboard\_compact','')
       
     for (let piece of pieces) {
       parsedChessboard = parsedChessboard.split(piece).join("\""+piece+"\"")
