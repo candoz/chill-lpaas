@@ -144,7 +144,6 @@ assert_these([Head | Tail]) :- assert(Head), assert_these(Tail).
 % under_enemy_attack(+P)
 under_enemy_attack(P) :-
   cell(Pi, Pi_content),
-
   legal_move(Pi, P),
   %DEBUG: print(Pi),
   !.  % green cut
@@ -235,7 +234,7 @@ never_moved(P, [(Last_retracted_list, Last_asserted_list) | Older_history]) :-
 can_move(Color) :-
   cell(P0, Ally),
   team(Ally, Color),
-  available_move(Ally, P0, _),
+  available_move(P0, _),
   !. % green cut
 
 % available_move(+Piece, +P0, ?P)
