@@ -68,8 +68,11 @@ result(nothing).
 
 %%% Retrieves all the chessboard cells in a list of lists, useful for client requests:
 %%% each sub-list is composed by X coordinate, Y coordinate and the respective Content.
-% chessboard(-Board)
-chessboard(Board) :- findall([X,Y,Content], cell(point(X,Y), Content), Board).
+% chessboard(-Cells_list)
+chessboard(Cells_list) :- findall(cell(P,Content), cell(P,Content), Cells_list).
+
+% chessboard(-Compact_list)
+chessboard_compact(Compact_list) :- findall([X,Y,Content], cell(point(X,Y), Content), Compact_list).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
