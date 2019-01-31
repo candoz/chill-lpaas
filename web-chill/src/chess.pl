@@ -237,15 +237,17 @@ can_move(Color) :-
   available_move(P0, _),
   !. % green cut
 
+
 % available_move(+Piece, +P0, ?P)
 available_move(P0, P) :-
   (legal_move(P0, P) ; legal_short_castle(P0, P) ; legal_long_castle(P0, P)),
   new_position_not_under_check(P0, P).
 
-%%% Retrieves all the chessboard cells in a list of lists, useful for client requests:
-%%% each sub-list is composed by X coordinate, Y coordinate and the respective Content.
-% chessboard(-Board)
-available_moves(P0, Coordinates_list) :- findall([X,Y], available_move(P0, point(X,Y)), Coordinates_list).
+% available_moves(+P0, ?Points_list)
+available_moves(P0, Coordinates_list) :- findall(P, available_move(P0, P), Coordinates_list).
+
+% available_moves(+Coordinates, ?Coordinates_list)
+available_moves_compact([X0,Y0], Coordinates_list) :- findall([X,Y], available_move(point(X0,Y0), point(X,Y)), Coordinates_list).
 
 
 %%% Move the Piece, if possible, from P0 to P
