@@ -181,8 +181,7 @@ new_position_not_under_check(P0, P) :-
       undo_last_update,  % modifying the knowledge base! (and changing turn...)
       true,
       !
-    );
-    (
+    ) ; (
       under_check(Color),
       undo_last_update,  % modifying the knowledge base! (and changing turn...)
       fail
@@ -201,7 +200,7 @@ must_promote(Piece, P) :-
 % legal_promotion(+Piece, ?To_piece)
 legal_promotion(Piece, To_piece) :-
   allies(Piece, To_piece),
-  (queen(To_piece); knight(To_piece); bishop(To_piece); rook(To_piece)).
+  ( queen(To_piece) ; knight(To_piece) ; bishop(To_piece) ; rook(To_piece) ).
 
 
 % only_kings_on_board
@@ -310,6 +309,7 @@ castle_integrity_check(Piece, P0, P) :-
   legal_castle(P0, P),
   new_position_not_under_check(P0, P).
 
+% update_board_for_castle(+King, +P0, +P1, +P2, +PR)
 update_board_for_castle(King, P0, P1, P2, PR) :-
   cell(PR, Rook),
   update_board(
@@ -322,7 +322,7 @@ update_board_for_castle(King, P0, P1, P2, PR) :-
 %%            Standard legal moves by the book (for every piece)              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% legal_move(+P0, ?P))
+% legal_move(+P0, ?P)
 
 %%% Pawn
 
