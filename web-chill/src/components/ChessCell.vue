@@ -6,6 +6,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   data () {
     return {
@@ -20,7 +21,7 @@ export default {
       return this.$store.state.chessboard[this.x][this.y]
     },
     selected () {
-      return this.$store.state.selectedPiece != null && 
+      return this.$store.state.selectedPiece != null &&
         JSON.stringify(this.$store.state.selectedPiece.coordinates) === JSON.stringify([this.x, this.y]) // TODO also same piece
     },
     color () {
@@ -41,7 +42,15 @@ export default {
       } else {
         this.$store.commit('deselectPiece')
         if (currentSelection.color === this.$store.state.playerColor) {
-          // chiamata remota
+          axios.post('http://localhost:5000/move', {
+            piece: currentSelection.rep,
+            startPoint: currentSelection.coordinates,
+            endPoint: [this.x, this.y]
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
         }
       }
     }

@@ -52,7 +52,7 @@ export const store = new Vuex.Store({
     currentTurn: PlayerColor.WHITE,
     playerColor: PlayerColor.WHITE,
     chessboard: testChessBoard,
-    selectedPiece: null, // { rep: 'pieceRep', color: 'pieceColor', coordinates: ['-1', '-1'] },
+    selectedPiece: null, // { rep: 'pieceRep', color: 'pieceColor', coordinates: [-1, -1] },
     result: ResultStatus.STILL_GAMING,
     chessPiecesEnum: ChessPiece,
     EMPTY: 'e'
