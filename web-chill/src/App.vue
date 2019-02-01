@@ -16,11 +16,11 @@ export default {
   methods: {
     pollData () {
       this.polling = setInterval(() => {
-        // this.$store.dispatch('pollResult', 'http://localhost:5000/result')
-        // this.$store.dispatch('pollChessboard', 'http://localhost:5000/chessboard')
-        // this.$store.dispatch('pollTurn', 'http://localhost:5000/turn')
-        this.$store.dispatch('generalPoll')
-      }, 2000)
+        this.$store.dispatch('pollResult', 'http://localhost:5000/result')
+        this.$store.dispatch('pollChessboard', 'http://localhost:5000/chessboard')
+        this.$store.dispatch('pollTurn', 'http://localhost:5000/turn')
+        // this.$store.dispatch('generalPoll')
+      }, 100)
     }
   },
   beforeDestroy () {

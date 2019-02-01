@@ -11,8 +11,13 @@ const lpaasUrl = 'http://localhost:8080/lpaas'
 const theoryPath = lpaasUrl + '/theories/chill'
 const goalPath = lpaasUrl + '/goals'
 const solutionPath = lpaasUrl + '/solutions'
-const chessboardGoalUrl = goalPath + '/chessboard/'
+const chessboardGoalUrl = goalPath + '/chessboard'
+const resultGoalUrl = goalPath + '/result'
+const turnGoalUrl = goalPath + '/turn'
 const chillPrologPath = 'src/chess.pl'
+let currentResult
+let currentChessboard
+let currentTurn
 const headers = {
   'Content-Type': 'text/plain',
   'Accept': 'application/json'
@@ -36,6 +41,9 @@ app.post('/move', (req, res, next) => {
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
+    queryCurrentResultLPaaS()
+    queryCurrentTurnLPaaS()
+    queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
 })
@@ -46,6 +54,9 @@ app.post('/move/withpromotion', (req, res, next) => {
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
+    queryCurrentResultLPaaS()
+    queryCurrentTurnLPaaS()
+    queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
 })
@@ -56,6 +67,9 @@ app.post('/move/longcastle', (req, res, next) => {
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
+    queryCurrentResultLPaaS()
+    queryCurrentTurnLPaaS()
+    queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
 })
@@ -66,6 +80,9 @@ app.post('/move/shortcastle', (req, res, next) => {
   drawProposalActive = false
 
   querySolutionLPaaS(goalName, body, lpaasResponse => {
+    queryCurrentResultLPaaS()
+    queryCurrentTurnLPaaS()
+    queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
 })
@@ -109,23 +126,39 @@ app.put('/draw/accept', (req, res, next) => {
 })
 
 app.get('/result', (req, res, next) => {
-  let goalName = 'result'
-  let body = 'result(R)'
-
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
-    let regex = /\(([^()]+)\)/g
-    res.send(regex.exec(lpaasResponse)[1])
-  })
+  res.send(currentResult)
+  // let body = {
+  //   goals: resultGoalUrl,
+  //   theory: theoryPath
+  // }
+  // axios.post(solutionPath, body, {
+  //   headers: solutionsHeaders,
+  //   params: {
+  //     skip: 0,
+  //     limit: 1
+  //   }
+  // }).then(lpaasResponse => {
+  //   let regex = /\(([^()]+)\)/g
+  //   res.send(regex.exec(lpaasResponse.data.solutions)[1])
+  // })
 })
 
 app.get('/turn', (req, res, next) => {
-  let goalName = 'turn'
-  let body = 'turn(C)'
-
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
-    let regex = /\(([^()]+)\)/g
-    res.send(regex.exec(lpaasResponse)[1])
-  })
+  res.send(currentTurn)
+  // let body = {
+  //   goals: turnGoalUrl,
+  //   theory: theoryPath
+  // }
+  // axios.post(solutionPath, body, {
+  //   headers: solutionsHeaders,
+  //   params: {
+  //     skip: 0,
+  //     limit: 1
+  //   }
+  // }).then(lpaasResponse => {
+  //   let regex = /\(([^()]+)\)/g
+  //   res.send(regex.exec(lpaasResponse.data.solutions)[1])
+  // })
 })
 
 app.post('/chessboard', (req, res, next) => {
@@ -146,28 +179,29 @@ app.post('/chessboard', (req, res, next) => {
 })
 
 app.get('/chessboard', (req, res, next) => {
-  let body = {
-    goals: lpaasUrl + chessboardGoalUrl,
-    theory: theoryPath
-  }
-  axios.post(solutionPath, body, {
-    headers: solutionsHeaders,
-    params: {
-      skip: 0,
-      limit: 1
-    }
-  }).then(response => {
-    let parsedChessboard = response.data.solutions.toString()
-      .replace('(', '').replace(')', '').replace('chessboard_compact', '')
-    for (let piece of pieces) {
-      parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
-    }
-    let chessboardMatrix = createChessboardMatrix()
-    JSON.parse(parsedChessboard).forEach(element => {
-      chessboardMatrix[element[0]][element[1]] = element[2]
-    })
-    res.send(chessboardMatrix)
-  }).catch(error => next(boom.badRequest(error)))
+  res.send(currentChessboard)
+  // let body = {
+  //   goals: lpaasUrl + chessboardGoalUrl,
+  //   theory: theoryPath
+  // }
+  // axios.post(solutionPath, body, {
+  //   headers: solutionsHeaders,
+  //   params: {
+  //     skip: 0,
+  //     limit: 1
+  //   }
+  // }).then(response => {
+  //   let parsedChessboard = response.data.solutions.toString()
+  //     .replace('(', '').replace(')', '').replace('chessboard_compact', '')
+  //   for (let piece of pieces) {
+  //     parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
+  //   }
+  //   let chessboardMatrix = createChessboardMatrix()
+  //   JSON.parse(parsedChessboard).forEach(element => {
+  //     chessboardMatrix[element[0]][element[1]] = element[2]
+  //   })
+  //   res.send(chessboardMatrix)
+  // }).catch(error => next(boom.badRequest(error)))
 })
 
 loadTheoryToLPaaS(response => console.log('Chill Theory Loaded to ' + lpaasUrl), error => console.log('Failed to load theory to LPaaS: ' + error))
@@ -178,20 +212,33 @@ app.listen(port)
 console.log('Chill Web Server Started on port: ' + port)
 
 function loadTheoryToLPaaS (callback, errorHandler) {
+  let body
+
   fs.readFile(chillPrologPath, 'utf8', (err, parsed) => {
     if (err) throw err
-    let body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
+    body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
     axios.post(theoryPath, body, {headers: headers})
-      .then(theoryResponse => {
-        body = 'chessboard_compact(R)'
-        axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
-          .then(goalResponse => {
-            callback(goalResponse)
-          })
-          .catch(goalError => errorHandler(goalError))
-      })
-      .catch(theoryError => errorHandler(theoryError))
+      .then(theoryResponse => console.log('Chill theory loaded to LPaaS: ' + theoryResponse))
+      .catch(theoryError => console.log('Failed to load chill theory to LPaaS: ' + theoryError))
   })
+
+  body = 'chessboard_compact(CC)'
+  axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
+    .then(chessboardGoalResponse => console.log('Chessboard goal loaded to LPaaS: ' + chessboardGoalResponse))
+    .catch(chessboardGoalError => console.log('Failed to load Chessboard goal to LPaaS: ' + chessboardGoalError))
+    .finally(() => queryCurrentChessboardLPaaS())
+
+  body = 'result(R)'
+  axios.post(goalPath, body, {params: { name: 'result' }, headers: headers})
+    .then(resultGoalResponse => console.log('Result goal loaded to LPaaS: ' + resultGoalResponse))
+    .catch(resultGoalError => console.log('Failed to load Result goal to LPaaS: ' + resultGoalError))
+    .finally(() => queryCurrentResultLPaaS())
+
+  body = 'turn(T)'
+  axios.post(goalPath, body, {params: { name: 'turn' }, headers: headers})
+    .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS: ' + turnGoalResponse))
+    .catch(turnGoalError => console.log('Failed to load Turn goal to LPaaS: ' + turnGoalError))
+    .finally(() => queryCurrentTurnLPaaS())
 }
 
 function createChessboardMatrix () {
@@ -213,6 +260,65 @@ function deleteLPaaSEntity (url) {
 
 function wrapCoordinate (coordArray) {
   return 'point(' + coordArray[0] + ',' + coordArray[1] + ')'
+}
+
+function queryCurrentResultLPaaS () {
+  let body = {
+    goals: resultGoalUrl,
+    theory: theoryPath
+  }
+  axios.post(solutionPath, body, {
+    headers: solutionsHeaders,
+    params: {
+      skip: 0,
+      limit: 1
+    }
+  }).then(lpaasResponse => {
+    let regex = /\(([^()]+)\)/g
+    currentResult = regex.exec(lpaasResponse.data.solutions)[1]
+  })
+}
+
+function queryCurrentTurnLPaaS () {
+  let body = {
+    goals: turnGoalUrl,
+    theory: theoryPath
+  }
+  axios.post(solutionPath, body, {
+    headers: solutionsHeaders,
+    params: {
+      skip: 0,
+      limit: 1
+    }
+  }).then(lpaasResponse => {
+    let regex = /\(([^()]+)\)/g
+    currentTurn = regex.exec(lpaasResponse.data.solutions)[1]
+  })
+}
+
+function queryCurrentChessboardLPaaS () {
+  let body = {
+    goals: lpaasUrl + chessboardGoalUrl,
+    theory: theoryPath
+  }
+  axios.post(solutionPath, body, {
+    headers: solutionsHeaders,
+    params: {
+      skip: 0,
+      limit: 1
+    }
+  }).then(response => {
+    let parsedChessboard = response.data.solutions.toString()
+      .replace('(', '').replace(')', '').replace('chessboard_compact', '')
+    for (let piece of pieces) {
+      parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
+    }
+    let chessboardMatrix = createChessboardMatrix()
+    JSON.parse(parsedChessboard).forEach(element => {
+      chessboardMatrix[element[0]][element[1]] = element[2]
+    })
+    currentChessboard = chessboardMatrix
+  })
 }
 
 function querySolutionLPaaS (goalName, prologBody, callback) {
