@@ -38,9 +38,7 @@ function createTestChessBoard () {
   for (let i = 0; i < 8; i++) {
     matrix[i] = []
     for (let j = 0; j < 8; j++) {
-      matrix[i][j] = {
-        piece: 'e'
-      }
+      matrix[i][j] = 'e'
     }
   }
   return matrix
@@ -110,11 +108,25 @@ export const store = new Vuex.Store({
     },
     pollChessboard: (context, url) => {
       axios.get(url).then(response => {
-        console.log('poll chessboard')
         context.commit('setChessboard', response.data)
       }).catch(error => {
         console.log(error)
       })
+    },
+    generalPoll: (context) => {
+      axios.get('http://localhost:5000/result')
+        .then(response => {
+          context.commit('setResult', response.data)
+        }).catch(resultError => console.log(resultError)).finally(() => {
+          axios.get('http://localhost:5000/chessboard').then(response => {
+            context.commit('setChessboard', response.data)
+          }).catch(chessboardError => console.log(chessboardError)).finally(() => {
+            axios.get('http://localhost:5000/turn')
+              .then(response => {
+                context.commit('setCurrentTurn', response.data)
+              }).catch(turnError => console.log(turnError))
+          })
+        })
     }
   }
 })
