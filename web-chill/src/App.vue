@@ -7,7 +7,27 @@
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  data () {
+    return {
+      polling: null
+    }
+  },
+  methods: {
+    pollData () {
+      this.polling = setInterval(() => {
+        this.$store.dispatch('pollResult', 'http://localhost:5000/result')
+        this.$store.dispatch('pollChessboard', 'http://localhost:5000/chessboard')
+        this.$store.dispatch('pollTurn', 'http://localhost:5000/turn')
+      }, 2000)
+    }
+  },
+  beforeDestroy () {
+    clearInterval(this.polling)
+  },
+  created () {
+    setTimeout(this.pollData(), 5000)
+  }
 }
 </script>
 

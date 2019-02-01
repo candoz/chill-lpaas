@@ -1,7 +1,9 @@
 <template>
   <div>
-    <button v-on:click="chess">Click Me!</button>
+    <button v-on:click="chessReset">Reset Match</button>
     <button v-on:click="switchPlayer">Switch Player</button>
+    <label>Current Result: {{ $store.state.result }}</label>
+    <label>Current Turn: {{ $store.state.currentTurn }}</label>
     <table v-if="player=='white'">
       <tr><td>8</td><chess-cell v-for="xRow8 in boardSide" :key="xRow8" :x="xRow8 -1" :y="7"></chess-cell></tr>
       <tr><td>7</td><chess-cell v-for="xRow7 in boardSide" :key="xRow7" :x="xRow7 -1" :y="6"></chess-cell></tr>
@@ -45,7 +47,7 @@ export default {
     }
   },
   methods: {
-    chess: function () {
+    chessReset: function () {
       this.$store.dispatch('setChessboard', 'http://localhost:5000/chessboard')
     },
     switchPlayer: function () {

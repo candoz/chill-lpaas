@@ -30,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.post('/move', (req, res, next) => {
+  console.log('Requested to move a piece')
   let goalName = 'move'
   let body = 'do_move(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ')'
   drawProposalActive = false

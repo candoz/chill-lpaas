@@ -88,12 +88,33 @@ export const store = new Vuex.Store({
   },
   actions: {
     setChessboard: (context, url) => {
+      axios.post(url).then(response => {
+        console.log(response)
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    pollResult: (context, url) => {
       axios.get(url).then(response => {
+        context.commit('setResult', response.data)
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    pollTurn: (context, url) => {
+      axios.get(url).then(response => {
+        context.commit('setCurrentTurn', response.data)
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    pollChessboard: (context, url) => {
+      axios.get(url).then(response => {
+        console.log('poll chessboard')
         context.commit('setChessboard', response.data)
       }).catch(error => {
         console.log(error)
       })
     }
-    // POLLING risultato, turno, scacchiera
   }
 })
