@@ -1,7 +1,6 @@
 <template>
   <td v-on:click="cellClicked" v-bind:class="[color, selected ? 'selected' : '']">
-    {{this.x}}{{this.y}}
-    {{piece}}
+    <img v-bind:src="pieceImg" width="90%" v-if="piece !== 'e'" />
   </td>
 </template>
 
@@ -9,14 +8,16 @@
 import axios from 'axios'
 export default {
   data () {
-    return {
-    }
+    return {}
   },
   props: [
     'x',
     'y'
   ],
   computed: {
+    pieceImg () {
+      return require('../assets/' + this.piece + '.png')
+    },
     piece () {
       return this.$store.state.chessboard[this.x][this.y]
     },
@@ -61,15 +62,15 @@ export default {
 <style lang="scss">
 
 .dark {
-  background-color: black
+  background-color: #5B83A9
 }
 
 .light {
-  background-color: white
+  background-color: #EDECD5
 }
 
 .selected {
-  background-color: yellow
+  background-color: #76C7E9
 }
 
 </style>
