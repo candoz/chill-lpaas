@@ -60,13 +60,16 @@ export default {
 <style lang="scss">
 table {
   table-layout: fixed;
+  // width: 81vw; // 9*9
+  // height: 81vw; // 9*9
   border-collapse: collapse;
-  border-spacing: 0;
   margin: 25px;
 }
 
 th, td {
-  width: 60px;
-  height: 60px;
+  width: 9vw;
+  height: 9vw;
+  padding: none;
+  margin: none;
 }
 </style>
