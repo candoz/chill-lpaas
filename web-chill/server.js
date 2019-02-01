@@ -15,9 +15,6 @@ const chessboardGoalUrl = goalPath + '/chessboard'
 const resultGoalUrl = goalPath + '/result'
 const turnGoalUrl = goalPath + '/turn'
 const chillPrologPath = 'src/chess.pl'
-let currentResult
-let currentChessboard
-let currentTurn
 const headers = {
   'Content-Type': 'text/plain',
   'Accept': 'application/json'
@@ -27,6 +24,10 @@ const solutionsHeaders = {
   'Accept': 'application/json'
 }
 const pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq', 'bk', 'e']
+
+let currentResult
+let currentChessboard
+let currentTurn
 let drawProposalActive = false
 
 let app = express()
@@ -40,7 +41,7 @@ app.post('/move', (req, res, next) => {
   let body = 'do_move(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ')'
   drawProposalActive = false
 
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
+  queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
     queryCurrentChessboardLPaaS()
@@ -53,7 +54,7 @@ app.post('/move/withpromotion', (req, res, next) => {
   let body = 'do_move_and_promote(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ',' + req.body.promotion + ')'
   drawProposalActive = false
 
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
+  queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
     queryCurrentChessboardLPaaS()
@@ -66,7 +67,7 @@ app.post('/move/longcastle', (req, res, next) => {
   let body = 'do_long_castle(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ')'
   drawProposalActive = false
 
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
+  queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
     queryCurrentChessboardLPaaS()
@@ -79,7 +80,7 @@ app.post('/move/shortcastle', (req, res, next) => {
   let body = 'do_short_castle(' + req.body.piece + ',' + wrapCoordinate(req.body.startPoint) + ',' + wrapCoordinate(req.body.endPoint) + ')'
   drawProposalActive = false
 
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
+  queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
     queryCurrentChessboardLPaaS()
@@ -91,7 +92,7 @@ app.get('/move/available', (req, res, next) => {
   let goalName = 'availablemoves'
   let body = 'available_moves_compact(' + wrapCoordinate(req.body.startPoint) + ',R)'
 
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
+  queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     console.log(lpaasResponse)
     res.send(lpaasResponse)
   })
@@ -101,7 +102,7 @@ app.post('/giveup', (req, res, next) => {
   let goalName = 'giveup'
   let body = 'give_up(' + req.body.playerColor + ')'
 
-  querySolutionLPaaS(goalName, body, lpaasResponse => {
+  queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     res.send(lpaasResponse)
   })
 })
@@ -116,7 +117,7 @@ app.put('/draw/accept', (req, res, next) => {
     let goalName = 'draw'
     let body = 'agree_to_draw(' + req.body.playerColor + ')'
 
-    querySolutionLPaaS(goalName, body, lpaasResponse => {
+    queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
       drawProposalActive = false
       res.send(lpaasResponse)
     })
@@ -127,38 +128,10 @@ app.put('/draw/accept', (req, res, next) => {
 
 app.get('/result', (req, res, next) => {
   res.send(currentResult)
-  // let body = {
-  //   goals: resultGoalUrl,
-  //   theory: theoryPath
-  // }
-  // axios.post(solutionPath, body, {
-  //   headers: solutionsHeaders,
-  //   params: {
-  //     skip: 0,
-  //     limit: 1
-  //   }
-  // }).then(lpaasResponse => {
-  //   let regex = /\(([^()]+)\)/g
-  //   res.send(regex.exec(lpaasResponse.data.solutions)[1])
-  // })
 })
 
 app.get('/turn', (req, res, next) => {
   res.send(currentTurn)
-  // let body = {
-  //   goals: turnGoalUrl,
-  //   theory: theoryPath
-  // }
-  // axios.post(solutionPath, body, {
-  //   headers: solutionsHeaders,
-  //   params: {
-  //     skip: 0,
-  //     limit: 1
-  //   }
-  // }).then(lpaasResponse => {
-  //   let regex = /\(([^()]+)\)/g
-  //   res.send(regex.exec(lpaasResponse.data.solutions)[1])
-  // })
 })
 
 app.post('/chessboard', (req, res, next) => {
@@ -180,28 +153,6 @@ app.post('/chessboard', (req, res, next) => {
 
 app.get('/chessboard', (req, res, next) => {
   res.send(currentChessboard)
-  // let body = {
-  //   goals: lpaasUrl + chessboardGoalUrl,
-  //   theory: theoryPath
-  // }
-  // axios.post(solutionPath, body, {
-  //   headers: solutionsHeaders,
-  //   params: {
-  //     skip: 0,
-  //     limit: 1
-  //   }
-  // }).then(response => {
-  //   let parsedChessboard = response.data.solutions.toString()
-  //     .replace('(', '').replace(')', '').replace('chessboard_compact', '')
-  //   for (let piece of pieces) {
-  //     parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
-  //   }
-  //   let chessboardMatrix = createChessboardMatrix()
-  //   JSON.parse(parsedChessboard).forEach(element => {
-  //     chessboardMatrix[element[0]][element[1]] = element[2]
-  //   })
-  //   res.send(chessboardMatrix)
-  // }).catch(error => next(boom.badRequest(error)))
 })
 
 loadTheoryToLPaaS(response => console.log('Chill Theory Loaded to ' + lpaasUrl), error => console.log('Failed to load theory to LPaaS: ' + error))
@@ -210,6 +161,8 @@ const port = process.env.PORT || 5000
 app.listen(port)
 
 console.log('Chill Web Server Started on port: ' + port)
+
+/* ------ UTILITY FUNCTION ------ */
 
 function loadTheoryToLPaaS (callback, errorHandler) {
   let body
@@ -263,25 +216,16 @@ function wrapCoordinate (coordArray) {
 }
 
 function queryCurrentResultLPaaS () {
-  let body = {
-    goals: resultGoalUrl,
-    theory: theoryPath
-  }
-  axios.post(solutionPath, body, {
-    headers: solutionsHeaders,
-    params: {
-      skip: 0,
-      limit: 1
-    }
-  }).then(lpaasResponse => {
-    let regex = /\(([^()]+)\)/g
-    currentResult = regex.exec(lpaasResponse.data.solutions)[1]
-  })
+  queryChillWithCustomGoal(resultGoalUrl)
 }
 
 function queryCurrentTurnLPaaS () {
+  queryChillWithCustomGoal(turnGoalUrl)
+}
+
+function queryChillWithCustomGoal (goalPath) {
   let body = {
-    goals: turnGoalUrl,
+    goals: goalPath,
     theory: theoryPath
   }
   axios.post(solutionPath, body, {
@@ -321,7 +265,7 @@ function queryCurrentChessboardLPaaS () {
   })
 }
 
-function querySolutionLPaaS (goalName, prologBody, callback) {
+function queryChillSolutionLPaaS (goalName, prologBody, callback) {
   let body = prologBody
   axios.post(goalPath, body, {params: { name: goalName }, headers: headers})
     .then(goalResponse => {
