@@ -39,9 +39,12 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #8A8785;
-  padding: 25px;
+  padding: 2vmin;
   background-color: #413E3B;
-  height: 100%;
-  width: 100%;
+  height: 100vh;
+  width: 100vw;
 }
+
+body { margin: 0; }
+
 </style>
