@@ -374,7 +374,7 @@ legal_move(P0, P) :-
   cell(P0, P0_content),
   bishop(P0_content),
   cell(P, P_content),
-  aligned_diagonally(P0, P),
+  aligned_diagonal(P0, P),
   empty_or_enemy(P0_content, P_content),
   no_pieces_interposed(P0, P).
 
@@ -697,7 +697,7 @@ aligned_anti_diagonal(P0, P) :- aligned_south_west(P0, P).
 aligned_axis(P0, P) :- aligned_vertically(P0, P), !.  % green cut
 aligned_axis(P0, P) :- aligned_horizontally(P0, P).
 
-%aligned_diagonally(+P0, +P)
+%aligned_diagonal(+P0, +P)
 aligned_diagonal(P0, P) :- aligned_main_diagonal(P0, P), !.  % green cut
 aligned_diagonal(P0, P) :- aligned_anti_diagonal(P0, P).
 
