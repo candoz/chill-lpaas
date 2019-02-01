@@ -58,5 +58,15 @@ export default {
 </script>
 
 <style lang="scss">
+table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 25px;
+}
 
+th, td {
+  width: 60px;
+  height: 60px;
+}
 </style>
