@@ -4,16 +4,21 @@
     <button v-on:click="switchPlayer">Switch Player</button>
     <label>Current Result: {{ $store.state.result }}</label>
     <label>Current Turn: {{ $store.state.currentTurn }}</label>
+    <player-switch></player-switch>
   </div>
 </template>
 
 <script>
+import PlayerSwitch from './PlayerSwitch.vue'
 
 export default {
   data () {
     return {
       
     }
+  },
+  components: {
+    PlayerSwitch
   },
   computed: {
     player () {

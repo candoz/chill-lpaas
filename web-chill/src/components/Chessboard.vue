@@ -45,12 +45,6 @@ export default {
     }
   },
   methods: {
-    chessReset: function () {
-      this.$store.dispatch('setChessboard', 'http://localhost:5000/chessboard')
-    },
-    switchPlayer: function () {
-      this.$store.commit('switchPlayerColor')
-    }
   }
 }
 </script>
