@@ -19,6 +19,7 @@ const turnGoalUrl = goalPath + '/turn'
 
 const chessboardSolutionHook = 'chessboard'
 const chessboardSolutionUrl = solutionPath + '/' + chessboardSolutionHook
+let updatingChessboard = false
 
 const resultSolutionHook = 'result'
 const resultSolutionUrl = solutionPath + '/' + resultSolutionHook
@@ -184,7 +185,24 @@ app.post('/chessboard', (req, res, next) => {
 })
 
 app.get('/chessboard', (req, res, next) => {
-  res.send(currentChessboard)
+  if (updatingChessboard) {
+    res.send(currentChessboard)
+  } else {
+    axios.get(chessboardSolutionUrl)
+      .then(response => {
+        let parsedChessboard = response.data.solutions[0].toString()
+          .replace('(', '').replace(')', '').replace('chessboard_compact', '')
+        for (let piece of pieces) {
+          parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
+        }
+        let chessboardMatrix = createChessboardMatrix()
+        JSON.parse(parsedChessboard).forEach(element => {
+          chessboardMatrix[element[0]][element[1]] = element[2]
+        })
+        currentChessboard = chessboardMatrix
+        res.send(currentChessboard)
+      })
+  }
 })
 
 loadTheoryToLPaaS(response => console.log('Chill Theory Loaded to ' + lpaasUrl), error => console.log('Failed to load theory to LPaaS: ' + error))
@@ -299,27 +317,23 @@ function queryCurrentTurnLPaaS () {
 }
 
 function queryCurrentChessboardLPaaS () {
-  let body = {
-    goals: lpaasUrl + chessboardGoalUrl,
-    theory: theoryPath
-  }
-  axios.post(solutionPath, body, {
-    headers: solutionsHeaders,
-    params: {
-      skip: 0,
-      limit: 1
+  updatingChessboard = true
+  axios.delete(chessboardSolutionUrl).then(response => {
+    let body = {
+      goals: chessboardGoalUrl,
+      theory: theoryPath
     }
-  }).then(response => {
-    let parsedChessboard = response.data.solutions.toString()
-      .replace('(', '').replace(')', '').replace('chessboard_compact', '')
-    for (let piece of pieces) {
-      parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
-    }
-    let chessboardMatrix = createChessboardMatrix()
-    JSON.parse(parsedChessboard).forEach(element => {
-      chessboardMatrix[element[0]][element[1]] = element[2]
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders,
+      params: {
+        skip: 0,
+        limit: 1,
+        hook: chessboardSolutionHook
+      }
+    }).then(response => {
+      updatingChessboard = false
+      console.log('Chessboard Solution Updated')
     })
-    currentChessboard = chessboardMatrix
   })
 }
 
