@@ -46,7 +46,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  padding: 2vmin;
+  padding: 2.5vmin;
 }
 
 </style>

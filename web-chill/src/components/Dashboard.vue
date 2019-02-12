@@ -1,24 +1,27 @@
 <template>
-  <div>
-    <button v-on:click="chessReset">Reset Match</button>
-    <button v-on:click="switchPlayer">Switch Player</button>
-    <label>Current Result: {{ $store.state.result }}</label>
-    <label>Current Turn: {{ $store.state.currentTurn }}</label>
-    <player-switch></player-switch>
+  <div id="dashboard">
+    <toggle-button id="toggle-button" @change="switchPlayer"
+                  :sync="player"
+                  :color="{checked:'#8A8785', unchecked:'#8A8785'}"
+                  :switchColor="{checked:'black', unchecked:'white'}"
+                  :labels="{checked:'playing as black', unchecked:'playing as white'}"
+                  :fontSize="12"
+                  :width="130"
+                  :height="25"
+                  :speed="400"/>
+    <button v-on:click="chessReset">reset board</button>
   </div>
 </template>
 
 <script>
-import PlayerSwitch from './PlayerSwitch.vue'
+import { ToggleButton } from 'vue-js-toggle-button'
 
 export default {
   data () {
-    return {
-      
-    }
+    return {}
   },
   components: {
-    PlayerSwitch
+    ToggleButton
   },
   computed: {
     player () {
@@ -37,5 +40,13 @@ export default {
 </script>
 
 <style lang="scss">
+
+#dashboard {
+  margin-bottom: 2.5vmin;
+}
+
+#toggle-button {
+    margin-right: 1.5vmin;
+}
 
 </style>
