@@ -24,7 +24,7 @@ const resultSolutionHook = 'result'
 const resultSolutionUrl = solutionPath + '/' + resultSolutionHook
 
 const turnSolutionHook = 'turn'
-const turnSolutionHook = solutionPath + '/' + turnSolutionHook
+const turnSolutionUrl = solutionPath + '/' + turnSolutionHook
 
 const chillPrologPath = 'src/chess.pl'
 const headers = {
@@ -204,6 +204,15 @@ function loadTheoryToLPaaS (callback, errorHandler) {
     .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS'))
     .catch(turnGoalError => console.log('Failed to load Turn goal to LPaaS: ' + turnGoalError))
     .finally(() => queryCurrentTurnLPaaS())
+
+  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: resultSolutionHook }, headers: solutionsHeaders})
+    .then(response => console.log('Loaded Result Solution')).catch(err => console.log('Result Solution may exist: ' + err))
+
+  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: turnSolutionHook }, headers: solutionsHeaders})
+    .then(response => console.log('Loaded Turn Solution')).catch(err => console.log('Turn Solution may exist: ' + err))
+
+  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: chessboardSolutionHook }, headers: solutionsHeaders})
+    .then(response => console.log('Loaded Chessboard Solution')).catch(err => console.log('Chessboard Solution may exist: ' + err))
 }
 
 function createChessboardMatrix () {
