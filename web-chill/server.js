@@ -8,12 +8,27 @@ const boom = require('boom')
 const bodyParser = require('body-parser')
 
 const lpaasUrl = 'http://localhost:8080/lpaas'
+
 const theoryPath = lpaasUrl + '/theories/chill'
 const goalPath = lpaasUrl + '/goals'
 const solutionPath = lpaasUrl + '/solutions'
+
 const chessboardGoalUrl = goalPath + '/chessboard'
 const resultGoalUrl = goalPath + '/result'
 const turnGoalUrl = goalPath + '/turn'
+
+const chessboardSolutionHook = 'chessboard'
+const chessboardSolutionUrl = solutionPath + '/' + chessboardSolutionHook
+let updatingChessboard = false
+
+const resultSolutionHook = 'result'
+const resultSolutionUrl = solutionPath + '/' + resultSolutionHook
+let updatingResult = false
+
+const turnSolutionHook = 'turn'
+const turnSolutionUrl = solutionPath + '/' + turnSolutionHook
+let updatingTurn = false
+
 const chillPrologPath = 'src/chess.pl'
 const headers = {
   'Content-Type': 'text/plain',
@@ -127,11 +142,33 @@ app.put('/draw/accept', (req, res, next) => {
 })
 
 app.get('/result', (req, res, next) => {
-  res.send(currentResult)
+  if (updatingResult) {
+    res.send(currentResult)
+  } else {
+    axios.get(resultSolutionUrl)
+      .then(response => {
+        let regex = /\((.*?)\)/
+        currentResult = regex.exec(response.data.solutions)[1]
+        res.send(currentResult)
+      }).catch(err => {
+        next(boom.notFound(err.response))
+      })
+  }
 })
 
 app.get('/turn', (req, res, next) => {
-  res.send(currentTurn)
+  if (updatingTurn) {
+    res.send(currentTurn)
+  } else {
+    axios.get(turnSolutionUrl)
+      .then(response => {
+        let regex = /\((.*?)\)/
+        currentTurn = regex.exec(response.data.solutions)[1]
+        res.send(currentTurn)
+      }).catch(err => {
+        next(boom.notFound(err.response))
+      })
+  }
 })
 
 app.post('/chessboard', (req, res, next) => {
@@ -142,8 +179,7 @@ app.post('/chessboard', (req, res, next) => {
         .then(goalResponse => {
           console.log('Deleted Chessboard Goal')
           loadTheoryToLPaaS(result => res.sendStatus(200), error => next(boom.serverUnavailable(error)))
-        })
-        .catch(goalError => {
+        }).catch(goalError => {
           next(boom.serverUnavailable(goalError))
         })
     }).catch(error => {
@@ -152,7 +188,26 @@ app.post('/chessboard', (req, res, next) => {
 })
 
 app.get('/chessboard', (req, res, next) => {
-  res.send(currentChessboard)
+  if (updatingChessboard) {
+    res.send(currentChessboard)
+  } else {
+    axios.get(chessboardSolutionUrl)
+      .then(response => {
+        let parsedChessboard = response.data.solutions[0].toString()
+          .replace('(', '').replace(')', '').replace('chessboard_compact', '')
+        for (let piece of pieces) {
+          parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
+        }
+        let chessboardMatrix = createChessboardMatrix()
+        JSON.parse(parsedChessboard).forEach(element => {
+          chessboardMatrix[element[0]][element[1]] = element[2]
+        })
+        currentChessboard = chessboardMatrix
+        res.send(currentChessboard)
+      }).catch(err => {
+        next(boom.notFound(err.response))
+      })
+  }
 })
 
 loadTheoryToLPaaS(response => console.log('Chill Theory Loaded to ' + lpaasUrl), error => console.log('Failed to load theory to LPaaS: ' + error))
@@ -171,27 +226,36 @@ function loadTheoryToLPaaS (callback, errorHandler) {
     if (err) throw err
     body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
     axios.post(theoryPath, body, {headers: headers})
-      .then(theoryResponse => console.log('Chill theory loaded to LPaaS: ' + theoryResponse))
+      .then(theoryResponse => console.log('Chill theory loaded to LPaaS'))
       .catch(theoryError => console.log('Failed to load chill theory to LPaaS: ' + theoryError))
   })
 
   body = 'chessboard_compact(CC)'
   axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
-    .then(chessboardGoalResponse => console.log('Chessboard goal loaded to LPaaS: ' + chessboardGoalResponse))
+    .then(chessboardGoalResponse => console.log('Chessboard goal loaded to LPaaS'))
     .catch(chessboardGoalError => console.log('Failed to load Chessboard goal to LPaaS: ' + chessboardGoalError))
     .finally(() => queryCurrentChessboardLPaaS())
 
   body = 'result(R)'
   axios.post(goalPath, body, {params: { name: 'result' }, headers: headers})
-    .then(resultGoalResponse => console.log('Result goal loaded to LPaaS: ' + resultGoalResponse))
+    .then(resultGoalResponse => console.log('Result goal loaded to LPaaS'))
     .catch(resultGoalError => console.log('Failed to load Result goal to LPaaS: ' + resultGoalError))
     .finally(() => queryCurrentResultLPaaS())
 
   body = 'turn(T)'
   axios.post(goalPath, body, {params: { name: 'turn' }, headers: headers})
-    .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS: ' + turnGoalResponse))
+    .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS'))
     .catch(turnGoalError => console.log('Failed to load Turn goal to LPaaS: ' + turnGoalError))
     .finally(() => queryCurrentTurnLPaaS())
+
+  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: resultSolutionHook }, headers: solutionsHeaders})
+    .then(response => console.log('Loaded Result Solution')).catch(err => console.log('Result Solution may exist: ' + err))
+
+  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: turnSolutionHook }, headers: solutionsHeaders})
+    .then(response => console.log('Loaded Turn Solution')).catch(err => console.log('Turn Solution may exist: ' + err))
+
+  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: chessboardSolutionHook }, headers: solutionsHeaders})
+    .then(response => console.log('Loaded Chessboard Solution')).catch(err => console.log('Chessboard Solution may exist: ' + err))
 }
 
 function createChessboardMatrix () {
@@ -216,53 +280,74 @@ function wrapCoordinate (coordArray) {
 }
 
 function queryCurrentResultLPaaS () {
-  queryChillWithCustomGoal(resultGoalUrl)
+  updatingResult = true
+  axios.delete(resultSolutionUrl).then(response => {
+    let body = {
+      goals: resultGoalUrl,
+      theory: theoryPath
+    }
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders,
+      params: {
+        skip: 0,
+        limit: 1,
+        hook: resultSolutionHook
+      }
+    }).then(lpaasResponse => {
+      updatingResult = false
+      console.log('Result Solution Updated')
+    }).catch(err => {
+      console.log('Failed to post new result solution: ' + err.response.status)
+    })
+  }).catch(err => {
+    console.log('Failed to delete old result solution: ' + err.response.status)
+  })
 }
 
 function queryCurrentTurnLPaaS () {
-  queryChillWithCustomGoal(turnGoalUrl)
-}
-
-function queryChillWithCustomGoal (goalPath) {
-  let body = {
-    goals: goalPath,
-    theory: theoryPath
-  }
-  axios.post(solutionPath, body, {
-    headers: solutionsHeaders,
-    params: {
-      skip: 0,
-      limit: 1
+  updatingTurn = true
+  axios.delete(turnSolutionUrl).then(response => {
+    let body = {
+      goals: turnGoalUrl,
+      theory: theoryPath
     }
-  }).then(lpaasResponse => {
-    let regex = /\(([^()]+)\)/g
-    currentTurn = regex.exec(lpaasResponse.data.solutions)[1]
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders,
+      params: {
+        skip: 0,
+        limit: 1,
+        hook: turnSolutionHook
+      }
+    }).then(lpaasResponse => {
+      updatingTurn = false
+      console.log('Turn Solution Updated')
+    }).catch(err => {
+      console.log('Failed to post new turn solution: ' + err.response.status)
+    })
+  }).catch(err => {
+    console.log('Failed to delete old turn solution: ' + err.response.status)
   })
 }
 
 function queryCurrentChessboardLPaaS () {
-  let body = {
-    goals: lpaasUrl + chessboardGoalUrl,
-    theory: theoryPath
-  }
-  axios.post(solutionPath, body, {
-    headers: solutionsHeaders,
-    params: {
-      skip: 0,
-      limit: 1
+  updatingChessboard = true
+  axios.delete(chessboardSolutionUrl).then(response => {
+    let body = {
+      goals: chessboardGoalUrl,
+      theory: theoryPath
     }
-  }).then(response => {
-    let parsedChessboard = response.data.solutions.toString()
-      .replace('(', '').replace(')', '').replace('chessboard_compact', '')
-    for (let piece of pieces) {
-      parsedChessboard = parsedChessboard.split(piece).join('\"' + piece + '\"')
-    }
-    let chessboardMatrix = createChessboardMatrix()
-    JSON.parse(parsedChessboard).forEach(element => {
-      chessboardMatrix[element[0]][element[1]] = element[2]
-    })
-    currentChessboard = chessboardMatrix
-  })
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders,
+      params: {
+        skip: 0,
+        limit: 1,
+        hook: chessboardSolutionHook
+      }
+    }).then(response => {
+      updatingChessboard = false
+      console.log('Chessboard Solution Updated')
+    }).catch(err => console.log('Failed to post new chessboard solution: ' + err.response.status))
+  }).catch(err => console.log('Failed to delete old chessboard solution: ' + err.response.status))
 }
 
 function queryChillSolutionLPaaS (goalName, prologBody, callback) {
@@ -279,19 +364,16 @@ function queryChillSolutionLPaaS (goalName, prologBody, callback) {
           skip: 0,
           limit: 1
         }
+      }).then(solutionResponse => {
+        deleteLPaaSEntity(goalPath + '/' + goalName)
+        deleteLPaaSEntity(lpaasUrl + solutionResponse.data.link)
+        callback(solutionResponse.data.solutions)
+      }).catch(solutionError => {
+        deleteLPaaSEntity(goalPath + '/' + goalName)
+        // TODO leggere l'errore di lpaas e mapparlo con un errore per il client
+        callback(solutionError)
       })
-        .then(solutionResponse => {
-          deleteLPaaSEntity(goalPath + '/' + goalName)
-          deleteLPaaSEntity(lpaasUrl + solutionResponse.data.link)
-          callback(solutionResponse.data.solutions)
-        })
-        .catch(solutionError => {
-          deleteLPaaSEntity(goalPath + '/' + goalName)
-          // TODO leggere l'errore di lpaas e mapparlo con un errore per il client
-          callback(solutionError)
-        })
-    })
-    .catch(goalError => {
+    }).catch(goalError => {
       deleteLPaaSEntity(goalPath + '/' + goalName)
       // TODO leggere l'errore di lpaas e mapparlo con un errore per il client
       callback(goalError)
