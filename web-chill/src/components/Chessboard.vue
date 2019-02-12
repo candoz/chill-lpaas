@@ -1,7 +1,6 @@
 <template>
   <div>
     <table v-if="player=='white'">
-      <tr><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td></tr>
       <tr><td>8</td><chess-cell v-for="xRow8 in boardSide" :key="xRow8" :x="xRow8 -1" :y="7"></chess-cell><td> </td></tr>
       <tr><td>7</td><chess-cell v-for="xRow7 in boardSide" :key="xRow7" :x="xRow7 -1" :y="6"></chess-cell><td> </td></tr>
       <tr><td>6</td><chess-cell v-for="xRow6 in boardSide" :key="xRow6" :x="xRow6 -1" :y="5"></chess-cell><td> </td></tr>
@@ -13,7 +12,6 @@
       <tr><td> </td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td></tr>
     </table>
     <table v-else>
-      <tr><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td></tr>
       <tr><td>1</td><chess-cell v-for="xRow8 in boardSide" :key="xRow8" :x="boardSide - xRow8" :y="0"></chess-cell><td> </td></tr>
       <tr><td>2</td><chess-cell v-for="xRow7 in boardSide" :key="xRow7" :x="boardSide - xRow7" :y="1"></chess-cell><td> </td></tr>
       <tr><td>3</td><chess-cell v-for="xRow6 in boardSide" :key="xRow6" :x="boardSide - xRow6" :y="2"></chess-cell><td> </td></tr>
