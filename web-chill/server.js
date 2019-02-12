@@ -22,9 +22,11 @@ const chessboardSolutionUrl = solutionPath + '/' + chessboardSolutionHook
 
 const resultSolutionHook = 'result'
 const resultSolutionUrl = solutionPath + '/' + resultSolutionHook
+let updatingResult = false
 
 const turnSolutionHook = 'turn'
 const turnSolutionUrl = solutionPath + '/' + turnSolutionHook
+let updatingTurn = false
 
 const chillPrologPath = 'src/chess.pl'
 const headers = {
@@ -139,11 +141,29 @@ app.put('/draw/accept', (req, res, next) => {
 })
 
 app.get('/result', (req, res, next) => {
-  res.send(currentResult)
+  if (updatingResult) {
+    res.send(currentResult)
+  } else {
+    axios.get(resultSolutionUrl)
+      .then(response => {
+        let regex = /\((.*?)\)/
+        currentResult = regex.exec(response.data.solutions)[1]
+        res.send(currentResult)
+      })
+  }
 })
 
 app.get('/turn', (req, res, next) => {
-  res.send(currentTurn)
+  if (updatingTurn) {
+    res.send(currentTurn)
+  } else {
+    axios.get(turnSolutionUrl)
+      .then(response => {
+        let regex = /\((.*?)\)/
+        currentTurn = regex.exec(response.data.solutions)[1]
+        res.send(currentTurn)
+      })
+  }
 })
 
 app.post('/chessboard', (req, res, next) => {
@@ -237,36 +257,44 @@ function wrapCoordinate (coordArray) {
 }
 
 function queryCurrentResultLPaaS () {
-  let body = {
-    goals: resultGoalUrl,
-    theory: theoryPath
-  }
-  axios.post(solutionPath, body, {
-    headers: solutionsHeaders,
-    params: {
-      skip: 0,
-      limit: 1
+  updatingResult = true
+  axios.delete(resultSolutionUrl).then(response => {
+    let body = {
+      goals: resultGoalUrl,
+      theory: theoryPath
     }
-  }).then(lpaasResponse => {
-    let regex = /\(([^()]+)\)/g
-    currentResult = regex.exec(lpaasResponse.data.solutions)[1]
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders,
+      params: {
+        skip: 0,
+        limit: 1,
+        hook: resultSolutionHook
+      }
+    }).then(lpaasResponse => {
+      updatingResult = false
+      console.log('Result Solution Updated')
+    })
   })
 }
 
 function queryCurrentTurnLPaaS () {
-  let body = {
-    goals: turnGoalUrl,
-    theory: theoryPath
-  }
-  axios.post(solutionPath, body, {
-    headers: solutionsHeaders,
-    params: {
-      skip: 0,
-      limit: 1
+  updatingTurn = true
+  axios.delete(turnSolutionUrl).then(response => {
+    let body = {
+      goals: turnGoalUrl,
+      theory: theoryPath
     }
-  }).then(lpaasResponse => {
-    let regex = /\(([^()]+)\)/g
-    currentTurn = regex.exec(lpaasResponse.data.solutions)[1]
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders,
+      params: {
+        skip: 0,
+        limit: 1,
+        hook: turnSolutionHook
+      }
+    }).then(lpaasResponse => {
+      updatingTurn = false
+      console.log('Turn Solution Updated')
+    })
   })
 }
 
