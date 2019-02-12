@@ -14,7 +14,6 @@ import PlayerSwitch from './PlayerSwitch.vue'
 export default {
   data () {
     return {
-      
     }
   },
   components: {

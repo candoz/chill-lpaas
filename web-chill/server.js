@@ -8,12 +8,15 @@ const boom = require('boom')
 const bodyParser = require('body-parser')
 
 const lpaasUrl = 'http://localhost:8080/lpaas'
+
 const theoryPath = lpaasUrl + '/theories/chill'
 const goalPath = lpaasUrl + '/goals'
 const solutionPath = lpaasUrl + '/solutions'
+
 const chessboardGoalUrl = goalPath + '/chessboard'
 const resultGoalUrl = goalPath + '/result'
 const turnGoalUrl = goalPath + '/turn'
+
 const chillPrologPath = 'src/chess.pl'
 const headers = {
   'Content-Type': 'text/plain',
@@ -216,16 +219,25 @@ function wrapCoordinate (coordArray) {
 }
 
 function queryCurrentResultLPaaS () {
-  queryChillWithCustomGoal(resultGoalUrl)
+  let body = {
+    goals: resultGoalUrl,
+    theory: theoryPath
+  }
+  axios.post(solutionPath, body, {
+    headers: solutionsHeaders,
+    params: {
+      skip: 0,
+      limit: 1
+    }
+  }).then(lpaasResponse => {
+    let regex = /\(([^()]+)\)/g
+    currentResult = regex.exec(lpaasResponse.data.solutions)[1]
+  })
 }
 
 function queryCurrentTurnLPaaS () {
-  queryChillWithCustomGoal(turnGoalUrl)
-}
-
-function queryChillWithCustomGoal (goalPath) {
   let body = {
-    goals: goalPath,
+    goals: turnGoalUrl,
     theory: theoryPath
   }
   axios.post(solutionPath, body, {

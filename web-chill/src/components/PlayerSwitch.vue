@@ -90,7 +90,7 @@ input:checked + .slider:before {
   font-family: Verdana, sans-serif;
 
   // make text unselectable
-  -webkit-user-select: none; /* Safari */        
+  -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */
