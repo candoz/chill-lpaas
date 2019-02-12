@@ -1,0 +1,36 @@
+<template>
+  <div>
+    <button v-on:click="chessReset">Reset Match</button>
+    <button v-on:click="switchPlayer">Switch Player</button>
+    <label>Current Result: {{ $store.state.result }}</label>
+    <label>Current Turn: {{ $store.state.currentTurn }}</label>
+  </div>
+</template>
+
+<script>
+
+export default {
+  data () {
+    return {
+      
+    }
+  },
+  computed: {
+    player () {
+      return this.$store.state.playerColor
+    }
+  },
+  methods: {
+    chessReset: function () {
+      this.$store.dispatch('setChessboard', 'http://localhost:5000/chessboard')
+    },
+    switchPlayer: function () {
+      this.$store.commit('switchPlayerColor')
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+
+</style>

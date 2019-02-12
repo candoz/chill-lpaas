@@ -1,9 +1,5 @@
 <template>
   <div>
-    <button v-on:click="chessReset">Reset Match</button>
-    <button v-on:click="switchPlayer">Switch Player</button>
-    <label>Current Result: {{ $store.state.result }}</label>
-    <label>Current Turn: {{ $store.state.currentTurn }}</label>
     <table v-if="player=='white'">
       <tr><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td><td> </td></tr>
       <tr><td>8</td><chess-cell v-for="xRow8 in boardSide" :key="xRow8" :x="xRow8 -1" :y="7"></chess-cell><td> </td></tr>
@@ -62,8 +58,6 @@ export default {
 <style lang="scss">
 table {
   table-layout: fixed;
-  // width: 80vw; // 8*10
-  // height: 80vw; // 8*10
   border-collapse: collapse;
   margin-left: auto;
   margin-right: auto;
