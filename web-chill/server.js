@@ -17,6 +17,15 @@ const chessboardGoalUrl = goalPath + '/chessboard'
 const resultGoalUrl = goalPath + '/result'
 const turnGoalUrl = goalPath + '/turn'
 
+const chessboardSolutionHook = 'chessboard'
+const chessboardSolutionUrl = solutionPath + '/' + chessboardSolutionHook
+
+const resultSolutionHook = 'result'
+const resultSolutionUrl = solutionPath + '/' + resultSolutionHook
+
+const turnSolutionHook = 'turn'
+const turnSolutionHook = solutionPath + '/' + turnSolutionHook
+
 const chillPrologPath = 'src/chess.pl'
 const headers = {
   'Content-Type': 'text/plain',
@@ -174,25 +183,25 @@ function loadTheoryToLPaaS (callback, errorHandler) {
     if (err) throw err
     body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
     axios.post(theoryPath, body, {headers: headers})
-      .then(theoryResponse => console.log('Chill theory loaded to LPaaS: ' + theoryResponse))
+      .then(theoryResponse => console.log('Chill theory loaded to LPaaS'))
       .catch(theoryError => console.log('Failed to load chill theory to LPaaS: ' + theoryError))
   })
 
   body = 'chessboard_compact(CC)'
   axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
-    .then(chessboardGoalResponse => console.log('Chessboard goal loaded to LPaaS: ' + chessboardGoalResponse))
+    .then(chessboardGoalResponse => console.log('Chessboard goal loaded to LPaaS'))
     .catch(chessboardGoalError => console.log('Failed to load Chessboard goal to LPaaS: ' + chessboardGoalError))
     .finally(() => queryCurrentChessboardLPaaS())
 
   body = 'result(R)'
   axios.post(goalPath, body, {params: { name: 'result' }, headers: headers})
-    .then(resultGoalResponse => console.log('Result goal loaded to LPaaS: ' + resultGoalResponse))
+    .then(resultGoalResponse => console.log('Result goal loaded to LPaaS'))
     .catch(resultGoalError => console.log('Failed to load Result goal to LPaaS: ' + resultGoalError))
     .finally(() => queryCurrentResultLPaaS())
 
   body = 'turn(T)'
   axios.post(goalPath, body, {params: { name: 'turn' }, headers: headers})
-    .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS: ' + turnGoalResponse))
+    .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS'))
     .catch(turnGoalError => console.log('Failed to load Turn goal to LPaaS: ' + turnGoalError))
     .finally(() => queryCurrentTurnLPaaS())
 }
