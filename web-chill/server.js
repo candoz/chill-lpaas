@@ -150,6 +150,8 @@ app.get('/result', (req, res, next) => {
         let regex = /\((.*?)\)/
         currentResult = regex.exec(response.data.solutions)[1]
         res.send(currentResult)
+      }).catch(err => {
+        next(boom.notFound(err.response))
       })
   }
 })
@@ -163,6 +165,8 @@ app.get('/turn', (req, res, next) => {
         let regex = /\((.*?)\)/
         currentTurn = regex.exec(response.data.solutions)[1]
         res.send(currentTurn)
+      }).catch(err => {
+        next(boom.notFound(err.response))
       })
   }
 })
@@ -175,8 +179,7 @@ app.post('/chessboard', (req, res, next) => {
         .then(goalResponse => {
           console.log('Deleted Chessboard Goal')
           loadTheoryToLPaaS(result => res.sendStatus(200), error => next(boom.serverUnavailable(error)))
-        })
-        .catch(goalError => {
+        }).catch(goalError => {
           next(boom.serverUnavailable(goalError))
         })
     }).catch(error => {
@@ -201,6 +204,8 @@ app.get('/chessboard', (req, res, next) => {
         })
         currentChessboard = chessboardMatrix
         res.send(currentChessboard)
+      }).catch(err => {
+        next(boom.notFound(err.response))
       })
   }
 })
@@ -291,7 +296,11 @@ function queryCurrentResultLPaaS () {
     }).then(lpaasResponse => {
       updatingResult = false
       console.log('Result Solution Updated')
+    }).catch(err => {
+      console.log('Failed to post new result solution: ' + err.response.status)
     })
+  }).catch(err => {
+    console.log('Failed to delete old result solution: ' + err.response.status)
   })
 }
 
@@ -312,7 +321,11 @@ function queryCurrentTurnLPaaS () {
     }).then(lpaasResponse => {
       updatingTurn = false
       console.log('Turn Solution Updated')
+    }).catch(err => {
+      console.log('Failed to post new turn solution: ' + err.response.status)
     })
+  }).catch(err => {
+    console.log('Failed to delete old turn solution: ' + err.response.status)
   })
 }
 
@@ -333,8 +346,8 @@ function queryCurrentChessboardLPaaS () {
     }).then(response => {
       updatingChessboard = false
       console.log('Chessboard Solution Updated')
-    })
-  })
+    }).catch(err => console.log('Failed to post new chessboard solution: ' + err.response.status))
+  }).catch(err => console.log('Failed to delete old chessboard solution: ' + err.response.status))
 }
 
 function queryChillSolutionLPaaS (goalName, prologBody, callback) {
@@ -351,19 +364,16 @@ function queryChillSolutionLPaaS (goalName, prologBody, callback) {
           skip: 0,
           limit: 1
         }
+      }).then(solutionResponse => {
+        deleteLPaaSEntity(goalPath + '/' + goalName)
+        deleteLPaaSEntity(lpaasUrl + solutionResponse.data.link)
+        callback(solutionResponse.data.solutions)
+      }).catch(solutionError => {
+        deleteLPaaSEntity(goalPath + '/' + goalName)
+        // TODO leggere l'errore di lpaas e mapparlo con un errore per il client
+        callback(solutionError)
       })
-        .then(solutionResponse => {
-          deleteLPaaSEntity(goalPath + '/' + goalName)
-          deleteLPaaSEntity(lpaasUrl + solutionResponse.data.link)
-          callback(solutionResponse.data.solutions)
-        })
-        .catch(solutionError => {
-          deleteLPaaSEntity(goalPath + '/' + goalName)
-          // TODO leggere l'errore di lpaas e mapparlo con un errore per il client
-          callback(solutionError)
-        })
-    })
-    .catch(goalError => {
+    }).catch(goalError => {
       deleteLPaaSEntity(goalPath + '/' + goalName)
       // TODO leggere l'errore di lpaas e mapparlo con un errore per il client
       callback(goalError)
