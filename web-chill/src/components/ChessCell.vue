@@ -1,5 +1,5 @@
 <template>
-  <td v-on:click="cellClicked" v-bind:class="[color, selected ? 'selected' : '']">
+  <td v-on:click="cellClicked" v-bind:class="[color, selected || lastMoved ? 'selected' : '']">
     <img v-bind:src="pieceImg" width="90%" v-if="piece !== 'e'" />
   </td>
 </template>
@@ -27,6 +27,9 @@ export default {
     },
     color () {
       return (this.x + this.y) % 2 === 0 ? 'dark' : 'light'
+    },
+    lastMoved () {
+      return this.isArrayInArray(this.$store.state.lastMove, [this.x, this.y])
     }
   },
   methods: {
@@ -54,6 +57,14 @@ export default {
           })
         }
       }
+    },
+    isArrayInArray: function (arr, item) {
+      var itemAsString = JSON.stringify(item)
+
+      var contains = arr.some(function (ele) {
+        return JSON.stringify(ele) === itemAsString
+      })
+      return contains
     }
   }
 }
