@@ -1,11 +1,21 @@
 <template>
   <div id="dashboard">
-    <toggle-button id="toggle-button" @change="switchPlayer"
+    <toggle-button class="toggle-button" @change="switchPlayer"
                   :sync="true"
                   :value="isBlack"
                   :color="{checked:'#8A8785', unchecked:'#8A8785'}"
                   :switchColor="{checked:'black', unchecked:'white'}"
                   :labels="{checked:'playing as black', unchecked:'playing as white'}"
+                  :fontSize="13"
+                  :width="140"
+                  :height="25"
+                  :speed="400"/>
+    <toggle-button class="toggle-button" @change="toggleShowAvailableMoves"
+                  :sync="true"
+                  :value="this.$store.state.hideAvailableMoves"
+                  :color="{checked:'#8A8785', unchecked:'#8A8785'}"
+                  :switchColor="{checked:'black', unchecked:'white'}"
+                  :labels="{checked:'hiding moves', unchecked:'showing moves'}"
                   :fontSize="13"
                   :width="140"
                   :height="25"
@@ -35,6 +45,9 @@ export default {
     },
     switchPlayer: function () {
       this.$store.commit('switchPlayerColor')
+    },
+    toggleShowAvailableMoves: function () {
+      this.$store.commit('toggleShowAvailableMoves')
     }
   }
 }
@@ -46,14 +59,14 @@ export default {
   margin-bottom: 2.5vmin;
 }
 
-#toggle-button {
+.toggle-button {
   margin: 1.5vmin;
 }
 
 #md-button {
+  margin: 1.5vmin;
   height: 25px;
   width: 112px;
-  margin: 1.5vmin;
   color: white;
   background-color: #5B83A9;
 }
