@@ -56,7 +56,9 @@ export const store = new Vuex.Store({
     chessPiecesEnum: ChessPiece,
     EMPTY: 'e'
   },
-  plugins: [createPersistedState()],
+  plugins: [createPersistedState({
+    storage: sessionStorage
+  })],
   getters: {
 
   },
