@@ -52,6 +52,7 @@ export const store = new Vuex.Store({
     playerColor: PlayerColor.WHITE,
     chessboard: testChessBoard,
     selectedPiece: null, // { rep: 'pieceRep', color: 'pieceColor', coordinates: [-1, -1] },
+    lastMove: [],
     result: ResultStatus.STILL_GAMING,
     chessPiecesEnum: ChessPiece,
     EMPTY: 'e'
@@ -86,6 +87,9 @@ export const store = new Vuex.Store({
     },
     deselectPiece: (state) => {
       state.selectedPiece = null
+    },
+    highlightLastMove: (state, payload) => {
+      state.lastMove = payload
     }
   },
   actions: {
@@ -113,6 +117,13 @@ export const store = new Vuex.Store({
     pollChessboard: (context, url) => {
       axios.get(url).then(response => {
         context.commit('setChessboard', response.data)
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    pollLastMoved: (context, url) => {
+      axios.get(url).then(response => {
+        context.commit('highlightLastMove', response.data)
       }).catch(error => {
         console.log(error)
       })

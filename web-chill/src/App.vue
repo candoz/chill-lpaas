@@ -9,21 +9,26 @@ export default {
   name: 'App',
   data () {
     return {
-      polling: null
+      generalPolling: null,
+      chessboardPolling: null
     }
   },
   methods: {
     pollData () {
-      this.polling = setInterval(() => {
+      this.generalPolling = setInterval(() => {
         this.$store.dispatch('pollResult', 'http://localhost:5000/result')
-        this.$store.dispatch('pollChessboard', 'http://localhost:5000/chessboard')
         this.$store.dispatch('pollTurn', 'http://localhost:5000/turn')
+        this.$store.dispatch('pollLastMoved', 'http://localhost:5000/lastmoved')
         // this.$store.dispatch('generalPoll')
-      }, 100)
+      }, 1000)
+      this.chessboardPolling = setInterval(() => {
+        this.$store.dispatch('pollChessboard', 'http://localhost:5000/chessboard')
+      }, 50)
     }
   },
   beforeDestroy () {
-    clearInterval(this.polling)
+    clearInterval(this.chessboardPolling)
+    clearInterval(this.generalPolling)
   },
   created () {
     setTimeout(this.pollData(), 5000)

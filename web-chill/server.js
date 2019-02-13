@@ -16,6 +16,7 @@ const solutionPath = lpaasUrl + '/solutions'
 const chessboardGoalUrl = goalPath + '/chessboard'
 const resultGoalUrl = goalPath + '/result'
 const turnGoalUrl = goalPath + '/turn'
+const lastMoveGoalUrl = goalPath + '/lastmove'
 
 const chessboardSolutionHook = 'chessboard'
 const chessboardSolutionUrl = solutionPath + '/' + chessboardSolutionHook
@@ -28,6 +29,10 @@ let updatingResult = false
 const turnSolutionHook = 'turn'
 const turnSolutionUrl = solutionPath + '/' + turnSolutionHook
 let updatingTurn = false
+
+const lastMoveSolutionHook = 'lastmove'
+const lastMoveSolutionUrl = solutionPath + '/' + lastMoveSolutionHook
+let updatingLastMove = false
 
 const chillPrologPath = 'src/chess.pl'
 const headers = {
@@ -43,6 +48,7 @@ const pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq'
 let currentResult
 let currentChessboard
 let currentTurn
+let currentLastMove
 let drawProposalActive = false
 
 let app = express()
@@ -59,6 +65,7 @@ app.post('/move', (req, res, next) => {
   queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
+    queryCurrentLastMoveLPaaS()
     queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
@@ -72,6 +79,7 @@ app.post('/move/withpromotion', (req, res, next) => {
   queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
+    queryCurrentLastMoveLPaaS()
     queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
@@ -85,6 +93,7 @@ app.post('/move/longcastle', (req, res, next) => {
   queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
+    queryCurrentLastMoveLPaaS()
     queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
@@ -98,9 +107,22 @@ app.post('/move/shortcastle', (req, res, next) => {
   queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     queryCurrentResultLPaaS()
     queryCurrentTurnLPaaS()
+    queryCurrentLastMoveLPaaS()
     queryCurrentChessboardLPaaS()
     res.send(lpaasResponse)
   })
+})
+
+app.get('/lastmoved', (req, res, next) => {
+  if (updatingLastMove) {
+    res.send(currentLastMove)
+  } else {
+    axios.get(lastMoveSolutionUrl)
+      .then(lpaasResponse => {
+        currentLastMove = lpaasResponse.data.solutions.toString().replace('(', '').replace(')', '').replace('last_moved_compact', '')
+        res.send(currentLastMove)
+      }).catch(err => next(boom.notFound(err.response)))
+  }
 })
 
 app.get('/move/available', (req, res, next) => {
@@ -245,6 +267,11 @@ function loadTheoryToLPaaS (callback, errorHandler) {
     .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS'))
     .catch(turnGoalError => console.log('Failed to load Turn goal to LPaaS: ' + turnGoalError))
 
+  body = 'last_moved_compact(R)'
+  axios.post(goalPath, body, {params: { name: 'lastmove' }, headers: headers})
+    .then(lastMovedGoalResponse => console.log('Last move goal loaded to LPaaS'))
+    .catch(lastMovedGoalError => console.log('Failed to load Last move goal to LPaaS: ' + lastMovedGoalError))
+
   axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: resultSolutionHook }, headers: solutionsHeaders})
     .then(response => console.log('Loaded Result Solution')).catch(err => console.log('Result Solution may exist: ' + err))
     .finally(() => queryCurrentResultLPaaS())
@@ -256,6 +283,10 @@ function loadTheoryToLPaaS (callback, errorHandler) {
   axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: chessboardSolutionHook }, headers: solutionsHeaders})
     .then(response => console.log('Loaded Chessboard Solution')).catch(err => console.log('Chessboard Solution may exist: ' + err))
     .finally(() => queryCurrentChessboardLPaaS())
+
+  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: lastMoveSolutionHook }, headers: solutionsHeaders})
+    .then(response => console.log('Loaded Last Move Solution')).catch(err => console.log('Last Move Solution may exist: ' + err))
+    .finally(() => queryCurrentLastMoveLPaaS())
 }
 
 function createChessboardMatrix () {
@@ -326,6 +357,29 @@ function queryCurrentTurnLPaaS () {
     })
   }).catch(err => {
     console.log('Failed to delete old turn solution: ' + err.response.status)
+  })
+}
+
+function queryCurrentLastMoveLPaaS () {
+  updatingLastMove = true
+  axios.delete(lastMoveSolutionUrl).then(response => {
+    let body = {
+      goals: lastMoveGoalUrl,
+      theory: theoryPath
+    }
+    axios.post(solutionPath, body, {
+      headers: solutionsHeaders,
+      params: {
+        skip: 0,
+        limit: 1,
+        hook: lastMoveSolutionHook
+      }
+    }).then(response => {
+      updatingLastMove = false
+      console.log('Last Move Solution Updated')
+    }).catch(err => console.log('Failed to post new last move solution: ' + err.response.status))
+  }).catch(err => {
+    console.log('Failed to delete old last move solution: ' + err.response.status)
   })
 }
 
