@@ -6,8 +6,8 @@
                   :color="{checked:'#8A8785', unchecked:'#8A8785'}"
                   :switchColor="{checked:'black', unchecked:'white'}"
                   :labels="{checked:'playing as black', unchecked:'playing as white'}"
-                  :fontSize="12"
-                  :width="125"
+                  :fontSize="13"
+                  :width="140"
                   :height="25"
                   :speed="400"/>
     <md-button id="md-button" class="md-raised md-primary" @click="chessReset">reset board</md-button>
@@ -47,13 +47,13 @@ export default {
 }
 
 #toggle-button {
-  margin-right: 1.5vmin;
+  margin: 1.5vmin;
 }
 
 #md-button {
   height: 25px;
-  width: 125px;
-  margin: 0px;
+  width: 112px;
+  margin: 1.5vmin;
   color: white;
   background-color: #5B83A9;
 }
