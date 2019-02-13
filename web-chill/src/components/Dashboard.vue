@@ -2,20 +2,20 @@
   <div id="dashboard">
     <toggle-button class="toggle-button" @change="switchPlayer"
                   :sync="true"
-                  :value="isBlack"
+                  :value="isWhite"
                   :color="{checked:'#8A8785', unchecked:'#8A8785'}"
-                  :switchColor="{checked:'black', unchecked:'white'}"
-                  :labels="{checked:'playing as black', unchecked:'playing as white'}"
+                  :switchColor="{checked:'white', unchecked:'black'}"
+                  :labels="{checked:'playing as white', unchecked:'playing as black'}"
                   :fontSize="13"
                   :width="140"
                   :height="25"
                   :speed="400"/>
     <toggle-button class="toggle-button" @change="toggleShowAvailableMoves"
                   :sync="true"
-                  :value="this.$store.state.hideAvailableMoves"
+                  :value="this.$store.state.showAvailableMoves"
                   :color="{checked:'#8A8785', unchecked:'#8A8785'}"
-                  :switchColor="{checked:'black', unchecked:'white'}"
-                  :labels="{checked:'hiding moves', unchecked:'showing moves'}"
+                  :switchColor="{checked:'white', unchecked:'black'}"
+                  :labels="{checked:'showing moves', unchecked:'hiding moves'}"
                   :fontSize="13"
                   :width="140"
                   :height="25"
@@ -35,8 +35,8 @@ export default {
     ToggleButton
   },
   computed: {
-    isBlack () {
-      return this.$store.state.playerColor === 'black'
+    isWhite () {
+      return this.$store.state.playerColor === 'white'
     }
   },
   methods: {

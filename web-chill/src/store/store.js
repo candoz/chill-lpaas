@@ -54,7 +54,7 @@ export const store = new Vuex.Store({
     selectedPiece: null, // { rep: 'pieceRep', color: 'pieceColor', coordinates: [-1, -1] },
     lastMove: [],
     result: ResultStatus.STILL_GAMING,
-    hideAvailableMoves: false,
+    showAvailableMoves: true,
     chessPiecesEnum: ChessPiece,
     EMPTY: 'e'
   },
@@ -75,7 +75,7 @@ export const store = new Vuex.Store({
       state.playerColor = state.playerColor === PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE
     },
     toggleShowAvailableMoves: (state) => {
-      state.hideAvailableMoves = !state.hideAvailableMoves
+      state.showAvailableMoves = !state.showAvailableMoves
     },
     setResult: (state, result) => {
       state.result = result
