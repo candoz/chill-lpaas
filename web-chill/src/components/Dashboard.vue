@@ -10,7 +10,7 @@
                   :width="130"
                   :height="25"
                   :speed="400"/>
-    <button v-on:click="chessReset">reset board</button>
+    <md-button id="md-button" class="md-raised md-primary" @click="chessReset">reset board</md-button>
   </div>
 </template>
 
@@ -25,9 +25,6 @@ export default {
     ToggleButton
   },
   computed: {
-    player () {
-      return this.$store.state.playerColor
-    },
     isBlack () {
       return this.$store.state.playerColor === 'black'
     }
@@ -50,7 +47,15 @@ export default {
 }
 
 #toggle-button {
-    margin-right: 1.5vmin;
+  margin-right: 1.5vmin;
+}
+
+#md-button {
+  height: 25px;
+  width: 130px;
+  margin: 0px;
+  color: white;
+  background-color: #5B83A9;
 }
 
 </style>

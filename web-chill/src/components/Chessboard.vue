@@ -61,5 +61,7 @@ th, td {
   height: 9vmin;
   padding: none;
   margin: none;
+  color: #EDECD5;
+  font-weight: bold;
 }
 </style>

@@ -4,6 +4,10 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import { store } from './store/store'
+import { MdButton } from 'vue-material/dist/components'
+import 'vue-material/dist/vue-material.css'
+
+Vue.use(MdButton)
 
 Vue.config.productionTip = false
 
