@@ -34,9 +34,8 @@ export default {
   },
   methods: {
     cellClicked: function () {
-      let currentSelection = this.$store.state.selectedPiece
-
-      if (currentSelection == null) {
+      let piece = this.$store.state.selectedPiece // keep it for the deselection!
+      if (piece == null) {
         if (this.$store.state.chessboard[this.x][this.y] !== this.$store.state.EMPTY) {
           this.$store.commit('selectPiece', {
             x: this.x,
@@ -45,22 +44,36 @@ export default {
         }
       } else {
         this.$store.commit('deselectPiece')
-        if (currentSelection.color === this.$store.state.playerColor) {
-          axios.post('http://localhost:5000/move', {
-            piece: currentSelection.rep,
-            startPoint: currentSelection.coordinates,
-            endPoint: [this.x, this.y]
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
+        if (piece.color === this.$store.state.playerColor) {
+          if (this.wantsToShortCastle(piece)) this.do('move/shortcastle', piece)
+          else if (this.wantsToLongCastle(piece)) this.do('move/longcastle', piece)
+          else this.do('move', piece)
         }
       }
     },
+    do: function (whatKindOfMove, piece) {
+      axios.post('http://localhost:5000/' + whatKindOfMove, {
+        piece: piece.rep,
+        startPoint: piece.coordinates,
+        endPoint: [this.x, this.y]
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    },
+    wantsToShortCastle: function (piece) {
+      return this.isKing(piece) && this.x === piece.coordinates[0] + 2
+    },
+    wantsToLongCastle: function (piece) {
+      return this.isKing(piece) && this.x === piece.coordinates[0] - 2
+    },
+    isKing: function (piece) {
+      return piece.rep === this.$store.state.chessPiecesEnum.WK.rep ||
+        piece.rep === this.$store.state.chessPiecesEnum.BK.rep
+    },
     isArrayInArray: function (arr, item) {
       var itemAsString = JSON.stringify(item)
-
       var contains = arr.some(function (ele) {
         return JSON.stringify(ele) === itemAsString
       })

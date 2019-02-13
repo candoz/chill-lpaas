@@ -61,9 +61,7 @@ export const store = new Vuex.Store({
   plugins: [createPersistedState({
     storage: sessionStorage
   })],
-  getters: {
-
-  },
+  getters: { },
   mutations: {
     setChessboard: (state, payload) => {
       state.chessboard = payload
