@@ -234,28 +234,28 @@ function loadTheoryToLPaaS (callback, errorHandler) {
   axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
     .then(chessboardGoalResponse => console.log('Chessboard goal loaded to LPaaS'))
     .catch(chessboardGoalError => console.log('Failed to load Chessboard goal to LPaaS: ' + chessboardGoalError))
-    .finally(() => queryCurrentChessboardLPaaS())
 
   body = 'result(R)'
   axios.post(goalPath, body, {params: { name: 'result' }, headers: headers})
     .then(resultGoalResponse => console.log('Result goal loaded to LPaaS'))
     .catch(resultGoalError => console.log('Failed to load Result goal to LPaaS: ' + resultGoalError))
-    .finally(() => queryCurrentResultLPaaS())
 
   body = 'turn(T)'
   axios.post(goalPath, body, {params: { name: 'turn' }, headers: headers})
     .then(turnGoalResponse => console.log('Turn goal loaded to LPaaS'))
     .catch(turnGoalError => console.log('Failed to load Turn goal to LPaaS: ' + turnGoalError))
-    .finally(() => queryCurrentTurnLPaaS())
 
   axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: resultSolutionHook }, headers: solutionsHeaders})
     .then(response => console.log('Loaded Result Solution')).catch(err => console.log('Result Solution may exist: ' + err))
+    .finally(() => queryCurrentResultLPaaS())
 
   axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: turnSolutionHook }, headers: solutionsHeaders})
     .then(response => console.log('Loaded Turn Solution')).catch(err => console.log('Turn Solution may exist: ' + err))
+    .finally(() => queryCurrentTurnLPaaS())
 
   axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: chessboardSolutionHook }, headers: solutionsHeaders})
     .then(response => console.log('Loaded Chessboard Solution')).catch(err => console.log('Chessboard Solution may exist: ' + err))
+    .finally(() => queryCurrentChessboardLPaaS())
 }
 
 function createChessboardMatrix () {
