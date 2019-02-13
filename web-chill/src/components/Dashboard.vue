@@ -7,7 +7,7 @@
                   :switchColor="{checked:'black', unchecked:'white'}"
                   :labels="{checked:'playing as black', unchecked:'playing as white'}"
                   :fontSize="12"
-                  :width="130"
+                  :width="125"
                   :height="25"
                   :speed="400"/>
     <md-button id="md-button" class="md-raised md-primary" @click="chessReset">reset board</md-button>
@@ -52,7 +52,7 @@ export default {
 
 #md-button {
   height: 25px;
-  width: 130px;
+  width: 125px;
   margin: 0px;
   color: white;
   background-color: #5B83A9;
