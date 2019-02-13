@@ -1,7 +1,8 @@
 <template>
   <div id="dashboard">
     <toggle-button id="toggle-button" @change="switchPlayer"
-                  :sync="player"
+                  :sync="true"
+                  :value="isBlack"
                   :color="{checked:'#8A8785', unchecked:'#8A8785'}"
                   :switchColor="{checked:'black', unchecked:'white'}"
                   :labels="{checked:'playing as black', unchecked:'playing as white'}"
@@ -26,6 +27,9 @@ export default {
   computed: {
     player () {
       return this.$store.state.playerColor
+    },
+    isBlack () {
+      return this.$store.state.playerColor === 'black'
     }
   },
   methods: {
