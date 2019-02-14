@@ -179,7 +179,6 @@ assert_these([Head | Tail]) :- assert(Head), assert_these(Tail).
 under_enemy_attack(P) :-
   cell(Pi, Pi_content),
   legal_move(Pi, P),
-  print(Pi),
   !.  % green cut
 
 % under_check(+Color)
