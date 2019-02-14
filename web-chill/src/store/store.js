@@ -15,7 +15,7 @@ const ResultStatus = {
   BLACK_WON: 'black',
   WHITE_WON: 'white',
   DRAW: 'draw',
-  UNDER_CHECK: 'under check'
+  UNDER_CHECK: 'under_check'
 }
 
 const ChessPiece = Object.freeze({
@@ -57,6 +57,8 @@ export const store = new Vuex.Store({
     result: ResultStatus.STILL_GAMING,
     showAvailableMoves: true,
     chessPiecesEnum: ChessPiece,
+    chessResultEnum: ResultStatus,
+    playerColorEnum: PlayerColor,
     EMPTY: 'e'
   },
   plugins: [createPersistedState({

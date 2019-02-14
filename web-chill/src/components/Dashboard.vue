@@ -21,6 +21,8 @@
                   :height="25"
                   :speed="400"/>
     <md-button id="md-button" class="md-raised md-primary" @click="chessReset">reset board</md-button>
+    <label>{{ this.$store.state.result }}</label>
+    <label>{{ this.$store.state.currentTurn }}</label>
   </div>
 </template>
 

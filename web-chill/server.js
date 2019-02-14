@@ -185,10 +185,12 @@ app.get('/result', (req, res, next) => {
   if (updatingResult) {
     res.send(currentResult)
   } else {
+    let time = Date.now()
     axios.get(resultSolutionUrl)
       .then(response => {
         let regex = /\((.*?)\)/
         currentResult = regex.exec(response.data.solutions)[1]
+        console.log('Poll result: ' + (Date.now() - time))
         res.send(currentResult)
       }).catch(err => {
         logger.log('error', 'Request to get result from LPaaS failed: %s', err)
@@ -352,11 +354,13 @@ function queryCurrentGameStateLPaaS () {
 
 function queryCurrentResultLPaaS () {
   updatingResult = true
+  let time
   axios.delete(resultSolutionUrl).then(response => {
     let body = {
       goals: resultGoalUrl,
       theory: theoryPath
     }
+    time = Date.now()
     axios.post(solutionPath, body, {
       headers: solutionsHeaders,
       params: {
@@ -365,6 +369,7 @@ function queryCurrentResultLPaaS () {
         hook: resultSolutionHook
       }
     }).then(lpaasResponse => {
+      console.log('End to update result: ' + (Date.now() - time))
       updatingResult = false
       logger.log('info', 'Result Solution Updated')
     }).catch(err => {

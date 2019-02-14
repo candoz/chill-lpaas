@@ -1,5 +1,5 @@
 <template>
-  <td v-on:click="cellClicked" v-bind:class="[color, selected || lastMoved ? 'selected' : '', availableAsMove ? 'available' : '']">
+  <td v-on:click="cellClicked" v-bind:class="[color, selected || lastMoved ? 'selected' : '', availableAsMove ? 'available' : '', underCheck ? 'undercheck' : '']">
     <img v-bind:src="pieceImg" width="90%" v-if="piece !== 'e'" />
   </td>
 </template>
@@ -33,6 +33,17 @@ export default {
     },
     availableAsMove () {
       return this.isArrayInArray(this.$store.state.availableMoves, [this.x, this.y])
+    },
+    underCheck () {
+      if (this.$store.state.result === this.$store.state.chessResultEnum.UNDER_CHECK) {
+        if (this.$store.state.currentTurn === this.$store.state.playerColorEnum.WHITE && this.piece === this.$store.state.chessPiecesEnum.WK.rep) {
+          return true
+        } else if (this.$store.state.currentTurn === this.$store.state.playerColorEnum.BLACK && this.piece === this.$store.state.chessPiecesEnum.BK.rep) {
+          return true
+        } else {
+          return false
+        }
+      }
     }
   },
   methods: {
@@ -96,7 +107,7 @@ export default {
 <style lang="scss">
 
 $highlight: rgba(238,174,202,1);
-// $chess-highlight: rgba();
+$chess-highlight: rgba(252, 77, 77, 1);
 
 .dark {
   background-color: #5B83A9;
@@ -112,6 +123,10 @@ $highlight: rgba(238,174,202,1);
 
 .available {
   background-image: radial-gradient(circle, $highlight 0%, rgba(255,255,255,0) 100%);
+}
+
+.undercheck {
+  background-image: radial-gradient(circle, rgba(255,255,255,0) 50%, $chess-highlight 100%);
 }
 
 </style>
