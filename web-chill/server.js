@@ -243,7 +243,7 @@ app.get('/chessboard', (req, res, next) => {
         res.send(currentChessboard)
       }).catch(err => {
         logger.log('error', 'Request to get chessboard from LPaaS failed: %s', err)
-        next(boom.notFound(err.response))
+        next(boom.notFound(err))
       })
   }
 })
@@ -264,11 +264,18 @@ function loadTheoryToLPaaS (callback, errorHandler) {
   let body
 
   fs.readFile(chillPrologPath, 'utf8', (err, parsed) => {
-    if (err) throw err
+    if (err) throw logger.log('error', 'Error while reading prolog source file: %s', err)
+    logger.log('info', 'Finished up to read chill prolog file')
     body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
     axios.post(theoryPath, body, {headers: headers})
-      .then(theoryResponse => logger.log('info', 'Initialization: Chill theory loaded to LPaaS'))
-      .catch(theoryError => logger.log('error', 'Initialization: Failed to load chill theory to LPaaS: %s', theoryError))
+      .then(theoryResponse => {
+        logger.log('info', 'Initialization: Chill theory loaded to LPaaS')
+        callback()
+      })
+      .catch(theoryError => {
+        logger.log('error', 'Initialization: Failed to load chill theory to LPaaS: %s', theoryError)
+        errorHandler()
+      })
   })
 
   body = 'chessboard_compact(CC)'
