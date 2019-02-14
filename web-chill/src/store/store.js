@@ -53,6 +53,7 @@ export const store = new Vuex.Store({
     chessboard: testChessBoard,
     selectedPiece: null, // { rep: 'pieceRep', color: 'pieceColor', coordinates: [-1, -1] },
     lastMove: [],
+    availableMoves: [],
     result: ResultStatus.STILL_GAMING,
     showAvailableMoves: true,
     chessPiecesEnum: ChessPiece,
@@ -88,16 +89,28 @@ export const store = new Vuex.Store({
       }
     },
     deselectPiece: (state) => {
+      state.availableMoves = []
       state.selectedPiece = null
     },
     highlightLastMove: (state, payload) => {
       state.lastMove = payload
+    },
+    setAvailableMoves: (state, payload) => {
+      state.availableMoves = payload
     }
   },
   actions: {
     setChessboard: (context, url) => {
       axios.post(url).then(response => {
         console.log(response)
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    availableMoves: (context, payload) => {
+      let body = { startPoint: '[' + payload.x + ',' + payload.y + ']' }
+      axios.put(payload.url, body, {headers: {'Content-Type': 'application/json'}}).then(response => {
+        context.commit('setAvailableMoves', response.data)
       }).catch(error => {
         console.log(error)
       })

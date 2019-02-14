@@ -1,5 +1,5 @@
 <template>
-  <td v-on:click="cellClicked" v-bind:class="[color, selected || lastMoved ? 'selected' : '']">
+  <td v-on:click="cellClicked" v-bind:class="[color, selected || lastMoved ? 'selected' : '', availableAsMove ? 'available' : '']">
     <img v-bind:src="pieceImg" width="90%" v-if="piece !== 'e'" />
   </td>
 </template>
@@ -30,6 +30,9 @@ export default {
     },
     lastMoved () {
       return this.isArrayInArray(this.$store.state.lastMove, [this.x, this.y])
+    },
+    availableAsMove () {
+      return this.isArrayInArray(this.$store.state.availableMoves, [this.x, this.y])
     }
   },
   methods: {
@@ -38,6 +41,13 @@ export default {
       if (piece == null) {
         if (this.$store.state.chessboard[this.x][this.y] !== this.$store.state.EMPTY) {
           this.$store.commit('selectPiece', {
+            x: this.x,
+            y: this.y
+          })
+        }
+        if (this.$store.state.showAvailableMoves) {
+          this.$store.dispatch('availableMoves', {
+            url: 'http://localhost:5000/move/available',
             x: this.x,
             y: this.y
           })
@@ -85,16 +95,23 @@ export default {
 
 <style lang="scss">
 
+$highlight: rgba(238,174,202,1);
+// $chess-highlight: rgba();
+
 .dark {
-  background-color: #5B83A9
+  background-color: #5B83A9;
 }
 
 .light {
-  background-color: #EDECD5
+  background-color: #EDECD5;
 }
 
 .selected {
   background-color: #76C7E9
+}
+
+.available {
+  background-image: radial-gradient(circle, $highlight 0%, rgba(255,255,255,0) 100%);
 }
 
 </style>

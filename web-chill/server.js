@@ -135,15 +135,21 @@ app.get('/lastmoved', (req, res, next) => {
   }
 })
 
-app.get('/move/available', (req, res, next) => {
+app.put('/move/available', (req, res, next) => {
+  console.log(req.body)
   logger.log('info', 'Request to get available moves for %s piece', req.body.startPoint)
 
   let goalName = 'availablemoves'
-  let body = 'available_moves_compact(' + wrapCoordinate(req.body.startPoint) + ',R)'
+  let body = 'available_moves_compact(' + req.body.startPoint + ',R)'
 
   queryChillSolutionLPaaS(goalName, body, lpaasResponse => {
     logger.log('info', 'Completed available moves for %s piece with result: %s', req.body.startPoint, lpaasResponse)
-    res.send(lpaasResponse)
+    let parsedAvailableMoves = lpaasResponse.toString()
+      .replace('(', '').replace(')', '').replace('available_moves_compact', '')
+    let regex = /\[\[(.*?)\]\]/g
+    let result = regex.exec(parsedAvailableMoves)
+    if (result) res.send(result[0])
+    else res.send([])
   })
 })
 
