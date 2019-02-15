@@ -159,6 +159,51 @@ export const store = new Vuex.Store({
               }).catch(turnError => console.log(turnError))
           })
         })
+    },
+    doMove: function (context, payload) {
+      axios.post('http://localhost:5000/move', {
+        piece: payload.piece,
+        startPoint: payload.startPoint,
+        endPoint: payload.endPoint
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    },
+    doMoveWithPromotion: function (context, payload) {
+      axios.post('http://localhost:5000/move/withpromotion', {
+        piece: payload.piece,
+        startPoint: payload.startPoint,
+        endPoint: payload.endPoint,
+        promotion: payload.promotion
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    },
+    doShortCastle: function (context, payload) {
+      axios.post('http://localhost:5000/move/shortcastle', {
+        piece: payload.piece,
+        startPoint: payload.startPoint,
+        endPoint: payload.endPoint
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    },
+    doLongCastle: function (context, payload) {
+      axios.post('http://localhost:5000/move/longcastle', {
+        piece: payload.piece,
+        startPoint: payload.startPoint,
+        endPoint: payload.endPoint
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
     }
   }
 })

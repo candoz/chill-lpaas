@@ -5,7 +5,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 export default {
   data () {
     return {}
@@ -66,28 +65,31 @@ export default {
       } else {
         this.$store.commit('deselectPiece')
         if (piece.color === this.$store.state.playerColor) {
-          if (this.wantsToShortCastle(piece)) this.do('move/shortcastle', piece)
-          else if (this.wantsToLongCastle(piece)) this.do('move/longcastle', piece)
-          else this.do('move', piece)
+          let payload = {
+            piece: piece.rep,
+            startPoint: piece.coordinates,
+            endPoint: [this.x, this.y]
+          }
+          if (this.mustPromote(piece)) {
+            // TODO: launch popup
+          } else if (this.wantsToShortCastle(piece)) this.$store.dispatch('doShortCastle', payload)
+          else if (this.wantsToLongCastle(piece)) this.$store.dispatch('doLongCastle', payload)
+          else this.$store.dispatch('doMove', payload)
         }
       }
-    },
-    do: function (whatKindOfMove, piece) {
-      axios.post('http://localhost:5000/' + whatKindOfMove, {
-        piece: piece.rep,
-        startPoint: piece.coordinates,
-        endPoint: [this.x, this.y]
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
     },
     wantsToShortCastle: function (piece) {
       return this.isKing(piece) && this.x === piece.coordinates[0] + 2
     },
     wantsToLongCastle: function (piece) {
       return this.isKing(piece) && this.x === piece.coordinates[0] - 2
+    },
+    mustPromote: function (piece) {
+      return this.isPawn(piece) && (this.y === 0 || this.y === 7)
+    },
+    isPawn: function (piece) {
+      return piece.rep === this.$store.state.chessPiecesEnum.WP.rep ||
+        piece.rep === this.$store.state.chessPiecesEnum.BP.rep
     },
     isKing: function (piece) {
       return piece.rep === this.$store.state.chessPiecesEnum.WK.rep ||
