@@ -184,21 +184,6 @@ app.put('/draw/accept', (req, res, next) => {
 })
 
 app.get('/result', (req, res, next) => {
-  // if (updatingResult) {
-  //   res.send(currentResult)
-  // } else {
-  //   let time = Date.now()
-  //   axios.get(resultSolutionUrl)
-  //     .then(response => {
-  //       let regex = /\((.*?)\)/
-  //       currentResult = regex.exec(response.data.solutions)[1]
-  //       console.log('Poll result: ' + (Date.now() - time))
-  //       res.send(currentResult)
-  //     }).catch(err => {
-  //       logger.log('error', 'Request to get result from LPaaS failed: %s', err)
-  //       next(boom.notFound(err.response))
-  //     })
-  // }
   res.send(currentResult)
 })
 
@@ -374,7 +359,7 @@ function queryCurrentResultLPaaS () {
     }).then(lpaasResponse => {
       let regex = /\((.*?)\)/
       currentResult = regex.exec(lpaasResponse.data.solutions)[1]
-      console.log('End to update result: ' + (Date.now() - time))
+      logger.log('info', 'End to update result: %s', (Date.now() - time))
       updatingResult = false
       logger.log('info', 'Result Solution Updated')
     }).catch(err => {
