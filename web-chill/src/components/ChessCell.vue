@@ -28,10 +28,10 @@ export default {
       return (this.x + this.y) % 2 === 0 ? 'dark' : 'light'
     },
     lastMoved () {
-      return this.isArrayInArray(this.$store.state.lastMove, [this.x, this.y])
+      return this.isArrayInArray([this.x, this.y], this.$store.state.lastMove)
     },
     availableAsMove () {
-      return this.isArrayInArray(this.$store.state.availableMoves, [this.x, this.y])
+      return this.isArrayInArray([this.x, this.y], this.$store.state.availableMoves)
     },
     underCheck () {
       if (this.$store.state.result === this.$store.state.chessResultEnum.UNDER_CHECK) {
@@ -47,8 +47,7 @@ export default {
   },
   methods: {
     cellClicked: function () {
-      let piece = this.$store.state.selectedPiece // keep it for the deselection!
-      if (piece == null) {
+      if (this.$store.state.selectedPiece == null) {
         if (this.$store.state.chessboard[this.x][this.y] !== this.$store.state.EMPTY) {
           this.$store.commit('selectPiece', {
             x: this.x,
@@ -63,8 +62,10 @@ export default {
           })
         }
       } else {
+        let piece = this.$store.state.selectedPiece // keep it for the deselection!
+        let availableMoves = this.$store.state.availableMoves // keep it for the deselection!
         this.$store.commit('deselectPiece')
-        if (piece.color === this.$store.state.playerColor) {
+        if (piece.color === this.$store.state.playerColor && this.isArrayInArray([this.x, this.y], availableMoves)) {
           let payload = {
             piece: piece.rep,
             startPoint: piece.coordinates,
@@ -96,7 +97,7 @@ export default {
       return piece.rep === this.$store.state.chessPiecesEnum.WK.rep ||
         piece.rep === this.$store.state.chessPiecesEnum.BK.rep
     },
-    isArrayInArray: function (arr, item) {
+    isArrayInArray: function (item, arr) {
       var itemAsString = JSON.stringify(item)
       var contains = arr.some(function (ele) {
         return JSON.stringify(ele) === itemAsString
