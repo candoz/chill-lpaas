@@ -71,7 +71,8 @@ export default {
             endPoint: [this.x, this.y]
           }
           if (this.mustPromote(piece)) {
-            // TODO: launch popup
+            this.$store.state.ongoingPromotion = payload
+            this.$modal.show('promotion-modal')
           } else if (this.wantsToShortCastle(piece)) this.$store.dispatch('doShortCastle', payload)
           else if (this.wantsToLongCastle(piece)) this.$store.dispatch('doLongCastle', payload)
           else this.$store.dispatch('doMove', payload)

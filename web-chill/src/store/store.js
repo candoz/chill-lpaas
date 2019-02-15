@@ -56,6 +56,7 @@ export const store = new Vuex.Store({
     availableMoves: [],
     result: ResultStatus.STILL_GAMING,
     showAvailableMoves: true,
+    ongoingPromotion: null, // { piece: 'pieceRep', startPoint: '', endPoint: '' },
     chessPiecesEnum: ChessPiece,
     chessResultEnum: ResultStatus,
     playerColorEnum: PlayerColor,
@@ -99,6 +100,9 @@ export const store = new Vuex.Store({
     },
     setAvailableMoves: (state, payload) => {
       state.availableMoves = payload
+    },
+    setOngoingPromotion: (state, payload) => {
+      state.ongoingPromotion = payload
     }
   },
   actions: {

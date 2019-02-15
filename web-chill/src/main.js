@@ -6,7 +6,9 @@ import router from './router'
 import { store } from './store/store'
 import { MdButton } from 'vue-material/dist/components'
 import 'vue-material/dist/vue-material.css'
+import VModal from 'vue-js-modal'
 
+Vue.use(VModal)
 Vue.use(MdButton)
 
 Vue.config.productionTip = false

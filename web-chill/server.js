@@ -136,7 +136,6 @@ app.get('/lastmoved', (req, res, next) => {
 })
 
 app.put('/move/available', (req, res, next) => {
-  console.log(req.body)
   logger.log('info', 'Request to get available moves for %s piece', req.body.startPoint)
 
   let goalName = 'availablemoves'
