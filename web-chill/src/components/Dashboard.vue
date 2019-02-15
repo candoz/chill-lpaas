@@ -7,7 +7,7 @@
                   :switchColor="{checked:'white', unchecked:'black'}"
                   :labels="{checked:'playing as white', unchecked:'playing as black'}"
                   :fontSize="13"
-                  :width="140"
+                  :width="135"
                   :height="25"
                   :speed="400"/>
     <toggle-button class="toggle-button" @change="toggleShowAvailableMoves"
@@ -15,14 +15,12 @@
                   :value="this.$store.state.showAvailableMoves"
                   :color="{checked:'#8A8785', unchecked:'#8A8785'}"
                   :switchColor="{checked:'white', unchecked:'black'}"
-                  :labels="{checked:'showing moves', unchecked:'hiding moves'}"
+                  :labels="{checked:'showing possible moves', unchecked:'hiding possible moves'}"
                   :fontSize="13"
-                  :width="140"
+                  :width="185"
                   :height="25"
                   :speed="400"/>
     <md-button id="md-button" class="md-raised md-primary" @click="chessReset">reset board</md-button>
-    <label>{{ this.$store.state.result }}</label>
-    <label>{{ this.$store.state.currentTurn }}</label>
   </div>
 </template>
 
@@ -68,7 +66,7 @@ export default {
 #md-button {
   margin: 1.5vmin;
   height: 25px;
-  width: 112px;
+  width: 115px;
   color: white;
   background-color: #5B83A9;
 }
