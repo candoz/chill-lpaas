@@ -20,7 +20,7 @@ export default {
         this.$store.dispatch('pollTurn', 'http://localhost:5000/turn')
         this.$store.dispatch('pollLastMoved', 'http://localhost:5000/lastmoved')
         // this.$store.dispatch('generalPoll')
-      }, 400)
+      }, 100)
       this.chessboardPolling = setInterval(() => {
         this.$store.dispatch('pollChessboard', 'http://localhost:5000/chessboard')
       }, 50)
