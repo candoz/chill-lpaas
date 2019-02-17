@@ -132,8 +132,9 @@ app.post('/chessboard', (req, res, next) => {
         error => logger.log('info', 'Reset game state failed: %s', error)
       )
     },
-    error => logger.log('info', 'Reset game state failed: %s', error))
-  res.send(200)
+    error => logger.log('info', 'Reset game state failed: %s', error)
+  )
+  res.sendStatus(200)
 })
 
 app.get('/result', (req, res, next) => {

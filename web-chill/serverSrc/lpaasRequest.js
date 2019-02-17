@@ -44,7 +44,7 @@ function loadChillTheory (callback, errorHandler) {
     if (err) throw logger.log('error', 'Error while reading prolog source file: %s', err)
     logger.log('info', 'Finished up to read chill prolog file')
     let body = parsed.replace(/%.*/g, '').replace(/\n/g, ' ').trim()
-    axios.post(theoryPath, body, {headers: headers})
+    axios.post(lpaasUrl + '/theories', body, {headers: headers, params: { name: 'chill' }})
       .then(theoryResponse => {
         logger.log('info', 'Initialization: Chill theory loaded to LPaaS')
         callback(theoryResponse)
@@ -56,7 +56,7 @@ function loadChillTheory (callback, errorHandler) {
   })
 }
 
-function loadDefaultGoalAndSolution () {
+function loadDefaultGoalAndSolution (callback) {
   let body = 'chessboard_compact(CC)'
   axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
     .then(chessboardGoalResponse => logger.log('info', 'Initialization: Chessboard goal loaded to LPaaS'))
@@ -88,6 +88,8 @@ function loadDefaultGoalAndSolution () {
 
   axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: lastMoveSolutionHook }, headers: solutionsHeaders})
     .then(response => logger.log('info', 'Initialization: Loaded Last Move Solution')).catch(err => logger.log('error', 'Initialization: Last Move Solution may exist: %s', err))
+
+  if (callback) callback()
 }
 
 function updateGameResultSolution (callback) {
