@@ -1,5 +1,5 @@
 <template>
-  <td v-on:click="cellClicked" v-bind:class="[color, selected || lastMoved ? 'selected' : '', availableAsMove ? 'available' : '', underCheck ? 'undercheck' : '']">
+  <td v-on:click="cellClicked" v-bind:class="[cellColor, selected || lastMoved ? 'selected' : '', (availableAsMove && showingAvailableMoves) ? 'available' : '', underCheck ? 'undercheck' : '']">
     <img v-bind:src="pieceImg" width="90%" v-if="piece !== 'e'" />
   </td>
 </template>
@@ -14,95 +14,78 @@ export default {
     'y'
   ],
   computed: {
-    pieceImg () {
-      return require('../assets/' + this.piece + '.png')
+    cellColor () { return (this.x + this.y) % 2 === 0 ? 'dark' : 'light' },
+    lastMoved () { return this.isArrayInArray([this.x, this.y], this.$store.state.lastMove) },
+    availableAsMove () { return this.isArrayInArray([this.x, this.y], this.$store.state.availableMoves) },
+    showingAvailableMoves () { return this.$store.state.showAvailableMoves },
+    piece () { return this.$store.state.chessboard[this.x][this.y] },
+    pieceImg () { return require('../assets/' + this.piece + '.png') },
+    containingAKing () {
+      return this.piece === this.$store.state.chessPiecesEnum.WK.rep ||
+        this.piece === this.$store.state.chessPiecesEnum.BK.rep
     },
-    piece () {
-      return this.$store.state.chessboard[this.x][this.y]
+    containingCurrentTurnKing () {
+      return this.containingAKing &&
+        this.$store.getters.pieceColor(this.piece) === this.$store.state.currentTurn
     },
     selected () {
-      return this.$store.state.selectedPiece != null &&
-        JSON.stringify(this.$store.state.selectedPiece.coordinates) === JSON.stringify([this.x, this.y]) // TODO also same piece
-    },
-    color () {
-      return (this.x + this.y) % 2 === 0 ? 'dark' : 'light'
-    },
-    lastMoved () {
-      return this.isArrayInArray([this.x, this.y], this.$store.state.lastMove)
-    },
-    availableAsMove () {
-      return this.isArrayInArray([this.x, this.y], this.$store.state.availableMoves)
+      let selection = this.$store.state.selection
+      return selection != null && JSON.stringify(selection.coordinates) === JSON.stringify([this.x, this.y])
     },
     underCheck () {
-      if (this.$store.state.result === this.$store.state.chessResultEnum.UNDER_CHECK) {
-        if (this.$store.state.currentTurn === this.$store.state.playerColorEnum.WHITE && this.piece === this.$store.state.chessPiecesEnum.WK.rep) {
-          return true
-        } else if (this.$store.state.currentTurn === this.$store.state.playerColorEnum.BLACK && this.piece === this.$store.state.chessPiecesEnum.BK.rep) {
-          return true
-        } else {
-          return false
-        }
-      }
+      return this.$store.state.result === this.$store.state.chessResultEnum.UNDER_CHECK &&
+        this.containingCurrentTurnKing
     }
   },
   methods: {
-    cellClicked: function () {
-      if (this.$store.state.selectedPiece == null) {
-        if (this.$store.state.chessboard[this.x][this.y] !== this.$store.state.EMPTY) {
+    cellClicked () {
+      if (this.$store.state.selection == null) {
+        if (this.containsMyPieceAndIsMyTurn()) {
+          this.$store.dispatch('pollAvailableMoves', {
+            url: 'http://localhost:5000/move/available',
+            x: this.x,
+            y: this.y
+          })
           this.$store.commit('selectPiece', {
             x: this.x,
             y: this.y
           })
         }
-        if (this.$store.state.showAvailableMoves) {
-          this.$store.dispatch('availableMoves', {
-            url: 'http://localhost:5000/move/available',
-            x: this.x,
-            y: this.y
-          })
-        }
       } else {
-        let piece = this.$store.state.selectedPiece // keep it for the deselection!
+        let selection = this.$store.state.selection // keep it for the deselection!
         let availableMoves = this.$store.state.availableMoves // keep it for the deselection!
         this.$store.commit('deselectPiece')
-        if (piece.color === this.$store.state.playerColor && this.isArrayInArray([this.x, this.y], availableMoves)) {
+        if (this.$store.state.playerColor === this.$store.getters.pieceColor(selection.piece) && this.isArrayInArray([this.x, this.y], availableMoves)) {
           let payload = {
-            piece: piece.rep,
-            startPoint: piece.coordinates,
+            piece: selection.piece,
+            startPoint: selection.coordinates,
             endPoint: [this.x, this.y]
           }
-          if (this.mustPromote(piece)) {
+          if (this.mustPromote(selection)) {
             this.$store.state.ongoingPromotion = payload
             this.$modal.show('promotion-modal')
-          } else if (this.wantsToShortCastle(piece)) this.$store.dispatch('doShortCastle', payload)
-          else if (this.wantsToLongCastle(piece)) this.$store.dispatch('doLongCastle', payload)
+          } else if (this.wantsToShortCastle(selection)) this.$store.dispatch('doShortCastle', payload)
+          else if (this.wantsToLongCastle(selection)) this.$store.dispatch('doLongCastle', payload)
           else this.$store.dispatch('doMove', payload)
         }
       }
     },
-    wantsToShortCastle: function (piece) {
-      return this.isKing(piece) && this.x === piece.coordinates[0] + 2
+    containsMyPieceAndIsMyTurn () {
+      return this.piece != null &&
+        this.$store.getters.pieceColor(this.piece) === this.$store.state.playerColor &&
+        this.$store.state.currentTurn === this.$store.state.playerColor
     },
-    wantsToLongCastle: function (piece) {
-      return this.isKing(piece) && this.x === piece.coordinates[0] - 2
+    wantsToShortCastle (selection) {
+      return selection.piece === this.$store.getters.myKing && selection.coordinates[0] === this.x - 2
     },
-    mustPromote: function (piece) {
-      return this.isPawn(piece) && (this.y === 0 || this.y === 7)
+    wantsToLongCastle (selection) {
+      return selection.piece === this.$store.getters.myKing && selection.coordinates[0] === this.x + 2
     },
-    isPawn: function (piece) {
-      return piece.rep === this.$store.state.chessPiecesEnum.WP.rep ||
-        piece.rep === this.$store.state.chessPiecesEnum.BP.rep
+    mustPromote (selection) {
+      return selection.piece === this.$store.getters.myPawn && (this.y === 0 || this.y === 7)
     },
-    isKing: function (piece) {
-      return piece.rep === this.$store.state.chessPiecesEnum.WK.rep ||
-        piece.rep === this.$store.state.chessPiecesEnum.BK.rep
-    },
-    isArrayInArray: function (item, arr) {
-      var itemAsString = JSON.stringify(item)
-      var contains = arr.some(function (ele) {
-        return JSON.stringify(ele) === itemAsString
-      })
-      return contains
+    isArrayInArray (item, arr) {
+      return arr.some(elem => JSON.stringify(elem) === JSON.stringify(item))
     }
   }
 }
@@ -111,7 +94,7 @@ export default {
 <style lang="scss">
 
 $highlight: rgba(238,174,202,1);
-$chess-highlight: rgba(252, 77, 77, 1);
+$check-highlight: rgba(252, 77, 77, 1);
 
 .dark {
   background-color: #5B83A9;
@@ -130,7 +113,7 @@ $chess-highlight: rgba(252, 77, 77, 1);
 }
 
 .undercheck {
-  background-image: radial-gradient(circle, rgba(255,255,255,0) 50%, $chess-highlight 100%);
+  background-image: radial-gradient(circle, rgba(255,255,255,0) 50%, $check-highlight 100%);
 }
 
 </style>

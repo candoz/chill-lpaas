@@ -3,10 +3,10 @@
     <dashboard></dashboard>
     <chessboard></chessboard>
     <modal name='promotion-modal'>
-      <img v-bind:src="queenImg" width="20%" v-on:click="promote(myQueen())"/>
-      <img v-bind:src="rookImg" width="20%" v-on:click="promote(myRook())"/>
-      <img v-bind:src="bishopImg" width="20%" v-on:click="promote(myBishop())"/>
-      <img v-bind:src="knightImg" width="20%" v-on:click="promote(myKnight())"/>
+      <img v-bind:src="myQueenImg" width="20%" v-on:click="promote(myQueen)"/>
+      <img v-bind:src="myRookImg" width="20%" v-on:click="promote(myRook)"/>
+      <img v-bind:src="myBishopImg" width="20%" v-on:click="promote(myBishop)"/>
+      <img v-bind:src="myKnightImg" width="20%" v-on:click="promote(myKnight)"/>
     </modal>
     <modal name='end-game-modal'>
     </modal>
@@ -23,18 +23,14 @@ export default {
     Chessboard
   },
   computed: {
-    queenImg () {
-      return require('../assets/' + this.myQueen() + '.png')
-    },
-    rookImg () {
-      return require('../assets/' + this.myRook() + '.png')
-    },
-    bishopImg () {
-      return require('../assets/' + this.myBishop() + '.png')
-    },
-    knightImg () {
-      return require('../assets/' + this.myKnight() + '.png')
-    }
+    myQueenImg () { return require('../assets/' + this.myQueen + '.png') },
+    myRookImg () { return require('../assets/' + this.myRook + '.png') },
+    myBishopImg () { return require('../assets/' + this.myBishop + '.png') },
+    myKnightImg () { return require('../assets/' + this.myKnight + '.png') },
+    myQueen () { return this.$store.getters.myQueen },
+    myRook () { return this.$store.getters.myRook },
+    myBishop () { return this.$store.getters.myBishop },
+    myKnight () { return this.$store.getters.myKnight }
   },
   methods: {
     promote: function (piece) {
@@ -48,34 +44,6 @@ export default {
       }
       this.$store.state.ongoingPromotion = null
       this.$store.dispatch('doMoveWithPromotion', updatedPayload)
-    },
-    myQueen: function () {
-      if (this.$store.state.playerColor === this.$store.state.playerColorEnum.WHITE) {
-        return this.$store.state.chessPiecesEnum.WQ.rep
-      } else {
-        return this.$store.state.chessPiecesEnum.BQ.rep
-      }
-    },
-    myRook: function () {
-      if (this.$store.state.playerColor === this.$store.state.playerColorEnum.WHITE) {
-        return this.$store.state.chessPiecesEnum.WR.rep
-      } else {
-        return this.$store.state.chessPiecesEnum.BR.rep
-      }
-    },
-    myBishop: function () {
-      if (this.$store.state.playerColor === this.$store.state.playerColorEnum.WHITE) {
-        return this.$store.state.chessPiecesEnum.WB.rep
-      } else {
-        return this.$store.state.chessPiecesEnum.BB.rep
-      }
-    },
-    myKnight: function () {
-      if (this.$store.state.playerColor === this.$store.state.playerColorEnum.WHITE) {
-        return this.$store.state.chessPiecesEnum.WN.rep
-      } else {
-        return this.$store.state.chessPiecesEnum.BN.rep
-      }
     }
   }
 }

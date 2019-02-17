@@ -11,7 +11,7 @@ const PlayerColor = {
 }
 
 const ResultStatus = {
-  STILL_GAMING: 'still gaming',
+  STILL_GAMING: 'still_gaming',
   BLACK_WON: 'black',
   WHITE_WON: 'white',
   DRAW: 'draw',
@@ -51,12 +51,12 @@ export const store = new Vuex.Store({
     currentTurn: PlayerColor.WHITE,
     playerColor: PlayerColor.WHITE,
     chessboard: testChessBoard,
-    selectedPiece: null, // { rep: 'pieceRep', color: 'pieceColor', coordinates: [-1, -1] },
+    selection: null, // { piece: 'wp', coordinates: [1, 2] },
     lastMove: [],
     availableMoves: [],
-    result: ResultStatus.STILL_GAMING,
     showAvailableMoves: true,
-    ongoingPromotion: null, // { piece: 'pieceRep', startPoint: '', endPoint: '' },
+    result: ResultStatus.STILL_GAMING,
+    ongoingPromotion: null, // { piece: 'wp', startPoint: '[1, 2]', endPoint: '[1, 3]' },
     chessPiecesEnum: ChessPiece,
     chessResultEnum: ResultStatus,
     playerColorEnum: PlayerColor,
@@ -65,44 +65,41 @@ export const store = new Vuex.Store({
   plugins: [createPersistedState({
     storage: sessionStorage
   })],
-  getters: { },
+  getters: {
+    myQueen: state => state.playerColor === state.playerColorEnum.WHITE ? state.chessPiecesEnum.WQ.rep : state.chessPiecesEnum.BQ.rep,
+    myRook: state => state.playerColor === state.playerColorEnum.WHITE ? state.chessPiecesEnum.WR.rep : state.chessPiecesEnum.BR.rep,
+    myBishop: state => state.playerColor === state.playerColorEnum.WHITE ? state.chessPiecesEnum.WB.rep : state.chessPiecesEnum.BB.rep,
+    myKnight: state => state.playerColor === state.playerColorEnum.WHITE ? state.chessPiecesEnum.WN.rep : state.chessPiecesEnum.BN.rep,
+    myPawn: state => state.playerColor === state.playerColorEnum.WHITE ? state.chessPiecesEnum.WP.rep : state.chessPiecesEnum.BP.rep,
+    myKing: state => state.playerColor === state.playerColorEnum.WHITE ? state.chessPiecesEnum.WK.rep : state.chessPiecesEnum.BK.rep,
+    pieceColor: state => piece =>
+      Object.values(state.chessPiecesEnum)
+        .filter(element => element.rep === piece)
+        .map(element => element.color)
+        .pop()
+  },
   mutations: {
-    setChessboard: (state, payload) => {
-      state.chessboard = payload
-    },
-    setCurrentTurn: (state, color) => {
-      state.currentTurn = color
-    },
-    switchPlayerColor: (state) => {
+    setChessboard: (state, payload) => { state.chessboard = payload },
+    setCurrentTurn: (state, payload) => { state.currentTurn = payload },
+    setResult: (state, payload) => { state.result = payload },
+    setLastMove: (state, payload) => { state.lastMove = payload },
+    setAvailableMoves: (state, payload) => { state.availableMoves = payload },
+    setOngoingPromotion: (state, payload) => { state.ongoingPromotion = payload },
+    toggleShowAvailableMoves: state => { state.showAvailableMoves = !state.showAvailableMoves },
+    togglePlayerColor: state => {
+      state.availableMoves = []
+      state.selection = null
       state.playerColor = state.playerColor === PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE
     },
-    toggleShowAvailableMoves: (state) => {
-      state.showAvailableMoves = !state.showAvailableMoves
-    },
-    setResult: (state, result) => {
-      state.result = result
-    },
     selectPiece: (state, payload) => {
-      let representation = state.chessboard[payload.x][payload.y]
-      let color = Object.values(state.chessPiecesEnum).filter(element => element.rep === representation).map(element => element.color).pop()
-      state.selectedPiece = {
-        rep: representation,
-        color: color,
+      state.selection = {
+        piece: state.chessboard[payload.x][payload.y],
         coordinates: [payload.x, payload.y]
       }
     },
-    deselectPiece: (state) => {
+    deselectPiece: state => {
       state.availableMoves = []
-      state.selectedPiece = null
-    },
-    highlightLastMove: (state, payload) => {
-      state.lastMove = payload
-    },
-    setAvailableMoves: (state, payload) => {
-      state.availableMoves = payload
-    },
-    setOngoingPromotion: (state, payload) => {
-      state.ongoingPromotion = payload
+      state.selection = null
     }
   },
   actions: {
@@ -113,7 +110,7 @@ export const store = new Vuex.Store({
         console.log(error)
       })
     },
-    availableMoves: (context, payload) => {
+    pollAvailableMoves: (context, payload) => {
       let body = { startPoint: '[' + payload.x + ',' + payload.y + ']' }
       axios.put(payload.url, body, {headers: {'Content-Type': 'application/json'}}).then(response => {
         context.commit('setAvailableMoves', response.data)
@@ -144,7 +141,7 @@ export const store = new Vuex.Store({
     },
     pollLastMoved: (context, url) => {
       axios.get(url).then(response => {
-        context.commit('highlightLastMove', response.data)
+        context.commit('setLastMove', response.data)
       }).catch(error => {
         console.log(error)
       })
@@ -170,9 +167,7 @@ export const store = new Vuex.Store({
         startPoint: payload.startPoint,
         endPoint: payload.endPoint
       }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       })
     },
     doMoveWithPromotion: function (context, payload) {
@@ -182,9 +177,7 @@ export const store = new Vuex.Store({
         endPoint: payload.endPoint,
         promotion: payload.promotion
       }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       })
     },
     doShortCastle: function (context, payload) {
@@ -193,9 +186,7 @@ export const store = new Vuex.Store({
         startPoint: payload.startPoint,
         endPoint: payload.endPoint
       }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       })
     },
     doLongCastle: function (context, payload) {
@@ -204,9 +195,7 @@ export const store = new Vuex.Store({
         startPoint: payload.startPoint,
         endPoint: payload.endPoint
       }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       })
     }
   }

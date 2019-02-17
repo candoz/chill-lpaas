@@ -1,6 +1,6 @@
 <template>
   <div id="dashboard">
-    <toggle-button class="toggle-button" @change="switchPlayer"
+    <toggle-button class="toggle-button" @change="togglePlayer"
                   :sync="true"
                   :value="isWhite"
                   :color="{checked:'#8A8785', unchecked:'#8A8785'}"
@@ -43,8 +43,8 @@ export default {
     chessReset: function () {
       this.$store.dispatch('setChessboard', 'http://localhost:5000/chessboard')
     },
-    switchPlayer: function () {
-      this.$store.commit('switchPlayerColor')
+    togglePlayer: function () {
+      this.$store.commit('togglePlayerColor')
     },
     toggleShowAvailableMoves: function () {
       this.$store.commit('toggleShowAvailableMoves')
