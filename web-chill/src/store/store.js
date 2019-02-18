@@ -111,8 +111,8 @@ export const store = new Vuex.Store({
       })
     },
     pollAvailableMoves: (context, payload) => {
-      let body = { startPoint: '[' + payload.x + ',' + payload.y + ']' }
-      axios.put(payload.url, body, {headers: {'Content-Type': 'application/json'}}).then(response => {
+      let params = { startPoint: '[' + payload.x + ',' + payload.y + ']' }
+      axios.get(payload.url, { params: params }, { headers: {'Content-Type': 'application/json'} }).then(response => {
         context.commit('setAvailableMoves', response.data)
       }).catch(error => {
         console.log(error)

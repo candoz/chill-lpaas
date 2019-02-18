@@ -92,10 +92,10 @@ app.get('/lastmoved', (req, res, next) => {
   }
 })
 
-app.put('/move/available', (req, res, next) => { // cambiare in get, parametri invece che body
+app.get('/move/available', (req, res, next) => {
   logger.log('info', 'Request to get available moves for %s piece', req.body.startPoint)
   let goalName = 'availablemoves'
-  let body = 'available_moves_compact(' + req.body.startPoint + ',R)'
+  let body = 'available_moves_compact(' + req.query.startPoint + ',R)'
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Completed available moves for %s piece with result: %s', req.body.startPoint, lpaasResponse)
