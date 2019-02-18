@@ -9,6 +9,8 @@
       <img v-bind:src="myKnightImg" width="20%" v-on:click="promote(myKnight)"/>
     </modal>
     <modal name='end-game-modal'>
+      <label>Result: {{ result }}</label>
+      <button v-on:click="newGame">New Game!</button>
     </modal>
   </div>
 </template>
@@ -30,7 +32,17 @@ export default {
     myQueen () { return this.$store.getters.myQueen },
     myRook () { return this.$store.getters.myRook },
     myBishop () { return this.$store.getters.myBishop },
-    myKnight () { return this.$store.getters.myKnight }
+    myKnight () { return this.$store.getters.myKnight },
+    result () {
+      let result = this.$store.state.result
+      let resultEnum = this.$store.state.chessResultEnum
+      if ((result === resultEnum.WHITE_WON || result === resultEnum.BLACK_WON || result === resultEnum.DRAW || result === resultEnum.UNDER_CHECK)) {
+        this.$modal.show('end-game-modal')
+      } else {
+        this.$modal.hide('end-game-modal')
+      }
+      return result
+    }
   },
   methods: {
     promote: function (piece) {
@@ -44,6 +56,9 @@ export default {
       }
       this.$store.state.ongoingPromotion = null
       this.$store.dispatch('doMoveWithPromotion', updatedPayload)
+    },
+    newGame: function () {
+      this.$store.dispatch('setChessboard')
     }
   }
 }

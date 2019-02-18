@@ -41,7 +41,7 @@ export default {
   },
   methods: {
     chessReset: function () {
-      this.$store.dispatch('setChessboard', 'http://localhost:5000/chessboard')
+      this.$store.dispatch('setChessboard')
     },
     togglePlayer: function () {
       this.$store.commit('togglePlayerColor')

@@ -12,8 +12,8 @@ const PlayerColor = {
 
 const ResultStatus = {
   STILL_GAMING: 'still_gaming',
-  BLACK_WON: 'black',
-  WHITE_WON: 'white',
+  BLACK_WON: 'win(black)',
+  WHITE_WON: 'win(white)',
   DRAW: 'draw',
   UNDER_CHECK: 'under_check'
 }
@@ -103,8 +103,8 @@ export const store = new Vuex.Store({
     }
   },
   actions: {
-    setChessboard: (context, url) => {
-      axios.post(url).then(response => {
+    setChessboard: context => {
+      axios.post('http://localhost:5000/chessboard').then(response => {
         console.log(response)
       }).catch(error => {
         console.log(error)
