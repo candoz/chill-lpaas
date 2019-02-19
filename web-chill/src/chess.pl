@@ -324,9 +324,9 @@ legal_move(Piece, P0, P) :-
 	    [cell(P0,e), cell(P,Piece)],
 	    Color
 	  ) ; ( % NB !!!
-      turn(Color),
-      king(P_content),
-      team(P_content, Color)
+	    king(P_content),
+	    turn(Current_turn_color),
+      team(P_content, Current_turn_color)
 	  )
   ).
 
