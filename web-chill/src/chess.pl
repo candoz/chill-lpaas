@@ -54,8 +54,8 @@ enemies(Piece1, Piece2) :-
   Color1 \= Color2.
 
 % result(?R)
-result(win(white)) :- turn(black), checkmate, !.
-result(win(black)) :- turn(white), checkmate, !.
+result(white_won) :- turn(black), checkmate, !.
+result(black_won) :- turn(white), checkmate, !.
 result(draw) :- stalemate, !.
 % result(draw) :- only_kings_on_board, !.
 result(under_check) :- turn(C), under_check(C), !.
@@ -414,13 +414,9 @@ legal_long(Piece, P0, P2) :-
   steps_west(P0, P3, 3),
   steps_west(P0, P4, 4), % west rook position
   cell(P1, e),
-  print('Hello1'),
   cell(P2, e),
-  print('Hello2'),
   cell(P3, e),
-  print('Hello3'),
   never_moved(P4),
-  print('Hello?'),
   team(Piece, Color),
   new_position_not_under_check([cell(P0,Piece), cell(P1,e)], [cell(P0,e), cell(P1,Piece)], Color),
   new_position_not_under_check([cell(P0,Piece), cell(P2,e)], [cell(P0,e), cell(P2,Piece)], Color).
