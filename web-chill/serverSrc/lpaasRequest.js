@@ -61,35 +61,47 @@ function loadDefaultGoalAndSolution (callback) {
   axios.post(goalPath, body, {params: { name: 'chessboard' }, headers: headers})
     .then(chessboardGoalResponse => logger.log('info', 'Initialization: Chessboard goal loaded to LPaaS'))
     .catch(chessboardGoalError => logger.log('error', 'Initialization: Failed to load Chessboard goal to LPaaS: %s', chessboardGoalError))
-
-  body = 'result(R)'
-  axios.post(goalPath, body, {params: { name: 'result' }, headers: headers})
-    .then(resultGoalResponse => logger.log('info', 'Initialization: Result goal loaded to LPaaS'))
-    .catch(resultGoalError => logger.log('error', 'Initialization: Failed to load Result goal to LPaaS: %s', resultGoalError))
-
-  body = 'turn(T)'
-  axios.post(goalPath, body, {params: { name: 'turn' }, headers: headers})
-    .then(turnGoalResponse => logger.log('info', 'Initialization: Turn goal loaded to LPaaS'))
-    .catch(turnGoalError => logger.log('error', 'Initialization: Failed to load Turn goal to LPaaS: %s', turnGoalError))
-
-  body = 'last_moved_compact(R)'
-  axios.post(goalPath, body, {params: { name: 'lastmove' }, headers: headers})
-    .then(lastMovedGoalResponse => logger.log('info', 'Initialization: Last move goal loaded to LPaaS'))
-    .catch(lastMovedGoalError => logger.log('error', 'Initialization: Failed to load Last move goal to LPaaS: %s', lastMovedGoalError))
-
-  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: resultSolutionHook }, headers: solutionsHeaders})
-    .then(response => logger.log('info', 'Initialization: Loaded Result Solution')).catch(err => logger.log('error', 'Initialization: Result Solution may exist: %s', err))
-
-  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: turnSolutionHook }, headers: solutionsHeaders})
-    .then(response => logger.log('info', 'Initialization: Loaded Turn Solution')).catch(err => logger.log('error', 'Initialization: Turn Solution may exist: %s', err))
-
-  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: chessboardSolutionHook }, headers: solutionsHeaders})
-    .then(response => logger.log('info', 'Initialization: Loaded Chessboard Solution')).catch(err => logger.log('error', 'Initialization: Chessboard Solution may exist: %s', err))
-
-  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: lastMoveSolutionHook }, headers: solutionsHeaders})
-    .then(response => logger.log('info', 'Initialization: Loaded Last Move Solution')).catch(err => logger.log('error', 'Initialization: Last Move Solution may exist: %s', err))
-
-  if (callback) callback()
+    .finally(() => {
+      body = 'result(R)'
+      axios.post(goalPath, body, {params: { name: 'result' }, headers: headers})
+        .then(resultGoalResponse => logger.log('info', 'Initialization: Result goal loaded to LPaaS'))
+        .catch(resultGoalError => logger.log('error', 'Initialization: Failed to load Result goal to LPaaS: %s', resultGoalError))
+        .finally(() => {
+          body = 'turn(T)'
+          axios.post(goalPath, body, {params: { name: 'turn' }, headers: headers})
+            .then(turnGoalResponse => logger.log('info', 'Initialization: Turn goal loaded to LPaaS'))
+            .catch(turnGoalError => logger.log('error', 'Initialization: Failed to load Turn goal to LPaaS: %s', turnGoalError))
+            .finally(() => {
+              body = 'last_moved_compact(R)'
+              axios.post(goalPath, body, {params: { name: 'lastmove' }, headers: headers})
+                .then(lastMovedGoalResponse => logger.log('info', 'Initialization: Last move goal loaded to LPaaS'))
+                .catch(lastMovedGoalError => logger.log('error', 'Initialization: Failed to load Last move goal to LPaaS: %s', lastMovedGoalError))
+                .finally(() => {
+                  axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: resultSolutionHook }, headers: solutionsHeaders})
+                    .then(response => logger.log('info', 'Initialization: Loaded Result Solution'))
+                    .catch(err => logger.log('error', 'Initialization: Result Solution may exist: %s', err))
+                    .finally(() => {
+                      axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: turnSolutionHook }, headers: solutionsHeaders})
+                        .then(response => logger.log('info', 'Initialization: Loaded Turn Solution'))
+                        .catch(err => logger.log('error', 'Initialization: Turn Solution may exist: %s', err))
+                        .finally(() => {
+                          axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: chessboardSolutionHook }, headers: solutionsHeaders})
+                            .then(response => logger.log('info', 'Initialization: Loaded Chessboard Solution'))
+                            .catch(err => logger.log('error', 'Initialization: Chessboard Solution may exist: %s', err))
+                            .finally(() => {
+                              axios.post(solutionPath, null, {params: { skip: 0, limit: 1, hook: lastMoveSolutionHook }, headers: solutionsHeaders})
+                                .then(response => logger.log('info', 'Initialization: Loaded Last Move Solution'))
+                                .catch(err => logger.log('error', 'Initialization: Last Move Solution may exist: %s', err))
+                                .finally(() => {
+                                  if (callback) callback()
+                                })
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    })
 }
 
 function updateGameResultSolution (callback) {

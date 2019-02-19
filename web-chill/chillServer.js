@@ -190,11 +190,12 @@ app.get('/chessboard', (req, res, next) => {
 lpaas.loadChillTheory(
   response => {
     logger.log('info', 'Chill Loaded')
-    updateGameState()
   },
-  error => logger.log('error', 'Failed to load theory to LPaaS: %s', error)
+  error => {
+    logger.log('error', 'Failed to load theory to LPaaS: %s', error)
+  }
 )
-lpaas.loadDefaultGoalAndSolution()
+lpaas.loadDefaultGoalAndSolution(() => updateGameState())
 
 const port = process.env.PORT || 5000
 app.listen(port)
