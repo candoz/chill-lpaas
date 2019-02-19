@@ -318,10 +318,13 @@ legal_move(Piece, P0, P) :-
   cell(P,P_content),
   legal(cell(P0,Piece), cell(P,P_content)),
   team(Piece, Color),
-  new_position_not_under_check(
-    [cell(P0,Piece), cell(P,P_content)],
-    [cell(P0,e), cell(P,Piece)],
-    Color
+  (
+    king(P_content) ;
+	  new_position_not_under_check(
+	    [cell(P0,Piece), cell(P,P_content)],
+	    [cell(P0,e), cell(P,Piece)],
+	    Color
+	  )
   ).
 
 
