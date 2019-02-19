@@ -12,8 +12,8 @@ const PlayerColor = {
 
 const ResultStatus = {
   STILL_GAMING: 'still_gaming',
-  BLACK_WON: 'win(black)',
-  WHITE_WON: 'win(white)',
+  BLACK_WON: 'black_won',
+  WHITE_WON: 'white_won',
   DRAW: 'draw',
   UNDER_CHECK: 'under_check'
 }

@@ -2,15 +2,16 @@
   <div>
     <dashboard></dashboard>
     <chessboard></chessboard>
-    <modal name='promotion-modal'>
-      <img v-bind:src="myQueenImg" width="20%" v-on:click="promote(myQueen)"/>
-      <img v-bind:src="myRookImg" width="20%" v-on:click="promote(myRook)"/>
-      <img v-bind:src="myBishopImg" width="20%" v-on:click="promote(myBishop)"/>
-      <img v-bind:src="myKnightImg" width="20%" v-on:click="promote(myKnight)"/>
+    <modal id="promotion-modal" name='promotion-modal'>
+      <label id="promotion-label">Choose promotion for your pawn: </label>
+      <img class="piece-img" v-bind:src="myQueenImg" width="20%" v-on:click="promote(myQueen)"/>
+      <img class="piece-img" v-bind:src="myRookImg" width="20%" v-on:click="promote(myRook)"/>
+      <img class="piece-img" v-bind:src="myBishopImg" width="20%" v-on:click="promote(myBishop)"/>
+      <img class="piece-img" v-bind:src="myKnightImg" width="20%" v-on:click="promote(myKnight)"/>
     </modal>
-    <modal name='end-game-modal'>
-      <label>Result: {{ result }}</label>
-      <button v-on:click="newGame">New Game!</button>
+    <modal id="end-game-modal" name='end-game-modal'>
+      <label id="result-label">Result: {{ result }}</label>
+      <md-button id="md-button" class="md-raised md-primary" @click="newGame">New Game</md-button>
     </modal>
   </div>
 </template>
@@ -36,7 +37,7 @@ export default {
     result () {
       let result = this.$store.state.result
       let resultEnum = this.$store.state.chessResultEnum
-      if ((result === resultEnum.WHITE_WON || result === resultEnum.BLACK_WON || result === resultEnum.DRAW || result === resultEnum.UNDER_CHECK)) {
+      if ((result === resultEnum.WHITE_WON || result === resultEnum.BLACK_WON || result === resultEnum.DRAW)) {
         this.$modal.show('end-game-modal')
       } else {
         this.$modal.hide('end-game-modal')
@@ -60,9 +61,54 @@ export default {
     newGame: function () {
       this.$store.dispatch('setChessboard')
     }
+  },
+  mounted: function () {
+    // this.$modal.show('end-game-modal')
+    // this.$modal.show('promotion-modal')
   }
 }
 </script>
 
 <style lang="scss">
+
+#md-button {
+  margin: 1.5vmin;
+  height: 25px;
+  width: 115px;
+  color: white;
+  background-color: #5B83A9;
+}
+
+.v--modal {
+  text-align: center;
+  display: block;
+  color: black;
+}
+
+#result-label {
+  display: block;
+  margin-top: 5vmin;
+}
+
+#promotion-label {
+  display: block;
+}
+
+.piece-img {
+  display: inline-block;
+  height: 20vmax;
+}
+
+.v--modal-box {
+  width: 50vmin !important;
+  left: 0 !important;
+  margin: auto !important;
+  top: 20% !important;
+  height: 20vmin !important;
+  min-height: 100px;
+  text-align: center !important;
+}
+
+// TODO media query per mobile aumentando la width e height
+
 </style>

@@ -12,7 +12,7 @@ cell(point(0,4),e).  cell(point(1,4),e).  cell(point(2,4),e).  cell(point(3,4),e
 cell(point(0,3),e).  cell(point(1,3),e).  cell(point(2,3),e).  cell(point(3,3),e).  cell(point(4,3),e).  cell(point(5,3),e).  cell(point(6,3),e).  cell(point(7,3),e). % empty row
 cell(point(0,2),e).  cell(point(1,2),e).  cell(point(2,2),e).  cell(point(3,2),e).  cell(point(4,2),e).  cell(point(5,2),e).  cell(point(6,2),e).  cell(point(7,2),e). % empty row
 cell(point(0,1),wp). cell(point(1,1),wp). cell(point(2,1),wp). cell(point(3,1),wp). cell(point(4,1),wp). cell(point(5,1),wp). cell(point(6,1),wp). cell(point(7,1),wp).
-cell(point(0,0),wr). cell(point(1,0),e). cell(point(2,0),e). cell(point(3,0),e). cell(point(4,0),wk). cell(point(5,0),e). cell(point(6,0),e). cell(point(7,0),wr).
+cell(point(0,0),wr). cell(point(1,0),wn). cell(point(2,0),wb). cell(point(3,0),wq). cell(point(4,0),wk). cell(point(5,0),wb). cell(point(6,0),wn). cell(point(7,0),wr).
 %    White Pawn    |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     .
 %    White Rook    |    White kNight    |    White Bishop    |     White Queen    |     White King     |    White Bishop    |    White kNight    |     White Rook     .
 
