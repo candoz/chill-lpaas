@@ -6,4 +6,4 @@ COPY ./ /web-chill
 
 RUN cd /web-chill ; npm run build
 
-CMD node /web-chill/server.js
+CMD cd /web-chill; node server.js

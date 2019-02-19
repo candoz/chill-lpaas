@@ -1,8 +1,14 @@
-version: '3'
+version: '2.1'
 services:
+  lpaas-ws:
+    build: ../lpaas-ws/
+    ports:
+      - "8080:8080"
   web-chill:
     build: ./web-chill/.
     ports: 
-    - "5000:5000"
-  lpaas-ws:
-    build: ../lpaas-ws/
+      - "5000:5000"
+    links:
+     - lpaas-ws
+    depends_on:
+      - lpaas-ws

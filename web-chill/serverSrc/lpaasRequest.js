@@ -6,7 +6,7 @@ axiosRetry(axios, { retries: 3 })
 const loggerUtility = require('./loggerUtility')
 const logger = loggerUtility.winstonLogger
 
-const lpaasUrl = 'http://localhost:8080/lpaas'
+const lpaasUrl = 'http://lpaas-ws:8080/lpaas'
 
 const theoryPath = lpaasUrl + '/theories/chill'
 const goalPath = lpaasUrl + '/goals'
@@ -247,6 +247,7 @@ function getSolutionResult (url, callback, error) {
 module.exports = {
 
   theoryPath: theoryPath,
+  lpaasUrl: lpaasUrl,
   chessboardSolutionUrl: chessboardSolutionUrl,
   resultSolutionUrl: resultSolutionUrl,
   turnSolutionUrl: turnSolutionUrl,

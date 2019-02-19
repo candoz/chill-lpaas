@@ -187,15 +187,35 @@ app.get('/chessboard', (req, res, next) => {
   }
 })
 
-lpaas.loadChillTheory(
-  response => {
-    logger.log('info', 'Chill Loaded')
-  },
-  error => {
-    logger.log('error', 'Failed to load theory to LPaaS: %s', error)
+let working = false
+
+function startChillServer () {
+  if (working === false) {
+    setTimeout(() => {
+      lpaas.getSolutionResult(lpaas.lpaasUrl + '/theories',
+        response => {
+          logger.info('Connection to LPaaS succeded')
+          working = true
+          startChillServer()
+        },
+        error => {
+          startChillServer()
+          logger.error('Connection to LPaaS failed: %s, retrying...', error)
+        })
+    }, 5000)
+  } else {
+    lpaas.loadChillTheory(
+      response => {
+        logger.log('info', 'Chill Loaded')
+      },
+      error => {
+        logger.log('error', 'Failed to load theory to LPaaS: %s', error)
+      }
+    )
+    lpaas.loadDefaultGoalAndSolution(() => updateGameState())
   }
-)
-lpaas.loadDefaultGoalAndSolution(() => updateGameState())
+}
+startChillServer()
 
 const port = process.env.PORT || 5000
 app.listen(port)
