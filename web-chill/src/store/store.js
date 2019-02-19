@@ -11,11 +11,11 @@ const PlayerColor = {
 }
 
 const ResultStatus = {
-  STILL_GAMING: 'still_gaming',
+  NOTHING: 'nothing',
   BLACK_WON: 'black_won',
   WHITE_WON: 'white_won',
   DRAW: 'draw',
-  UNDER_CHECK: 'under_check'
+  UNDER_CHECK: 'check'
 }
 
 const ChessPiece = Object.freeze({
@@ -55,7 +55,7 @@ export const store = new Vuex.Store({
     lastMove: [],
     availableMoves: [],
     showAvailableMoves: true,
-    result: ResultStatus.STILL_GAMING,
+    result: ResultStatus.NOTHING,
     ongoingPromotion: null, // { piece: 'wp', startPoint: '[1, 2]', endPoint: '[1, 3]' },
     chessPiecesEnum: ChessPiece,
     chessResultEnum: ResultStatus,
