@@ -12,13 +12,11 @@ cell(point(0,4),e).  cell(point(1,4),e).  cell(point(2,4),e).  cell(point(3,4),e
 cell(point(0,3),e).  cell(point(1,3),e).  cell(point(2,3),e).  cell(point(3,3),e).  cell(point(4,3),e).  cell(point(5,3),e).  cell(point(6,3),e).  cell(point(7,3),e). % empty row
 cell(point(0,2),e).  cell(point(1,2),e).  cell(point(2,2),e).  cell(point(3,2),e).  cell(point(4,2),e).  cell(point(5,2),e).  cell(point(6,2),e).  cell(point(7,2),e). % empty row
 cell(point(0,1),wp). cell(point(1,1),wp). cell(point(2,1),wp). cell(point(3,1),wp). cell(point(4,1),wp). cell(point(5,1),wp). cell(point(6,1),wp). cell(point(7,1),wp).
-cell(point(0,0),wr). cell(point(1,0),wn). cell(point(2,0),wb). cell(point(3,0),wq). cell(point(4,0),wk). cell(point(5,0),wb). cell(point(6,0),wn). cell(point(7,0),wr).
+cell(point(0,0),wr). cell(point(1,0),e). cell(point(2,0),e). cell(point(3,0),e). cell(point(4,0),wk). cell(point(5,0),e). cell(point(6,0),e). cell(point(7,0),wr).
 %    White Pawn    |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     .
 %    White Rook    |    White kNight    |    White Bishop    |     White Queen    |     White King     |    White Bishop    |    White kNight    |     White Rook     .
 
 turn(white).          % white, black
-gave_up(none).        % white, black, none
-agreed_to_draw(none). % white, black, none
 
 
 %%% Will contain a list of couples.
@@ -56,16 +54,12 @@ enemies(Piece1, Piece2) :-
   Color1 \= Color2.
 
 % result(?R)
-result(win(white)) :- gave_up(black), !.
-result(win(white)) :- turn(black), under_checkmate(black), !. % red cut!
-result(win(black)) :- gave_up(white), !.
-result(win(black)) :- turn(white), under_checkmate(white), !. % red cut!
-result(draw) :- agreed_to_draw(white), !.
-result(draw) :- agreed_to_draw(black), !.
-result(draw) :- turn(C), under_stall(C), !.
-result(draw) :- only_kings_on_board, !. % red cut!
-result(under_check) :- turn(C), under_check(C), !. % red cut!
-result(nothing). % red cut!
+result(win(white)) :- turn(black), checkmate, !.
+result(win(black)) :- turn(white), checkmate, !.
+result(draw) :- stalemate, !.
+% result(draw) :- only_kings_on_board, !.
+result(under_check) :- turn(C), under_check(C), !.
+result(nothing).
 
 
 %%% Retrieves all the chessboard cells in a list of lists, useful for client requests:
@@ -94,20 +88,10 @@ change_turn :-
   assert(turn(Next)),
   !. % red cut!
 
-% give_up(+Color)
-give_up(Color) :-
-  retract(gave_up(none)),
-  assert(gave_up(Color)).
-
-% agree_to_draw(+Color)
-agree_to_draw(Color) :-
-  retract(agreed_to_draw(none)),
-  assert(agreed_to_draw(Color)).
 
 %%% Updates the game status:
 %%% - retracts all the cells inside the To_retract list
 %%% - asserts all the cells inside the To_assert list
-%%% - changes the turn
 %%% - updates the history, adding this update
 % update_board(+To_retract, +To_assert)
 update_board(To_retract, To_assert) :-
@@ -115,28 +99,25 @@ update_board(To_retract, To_assert) :-
   assert_these(To_assert),
   retract(history(Old_history)),
   append([(To_retract, To_assert)], Old_history, Updated_history),
-  assert(history(Updated_history)),
-  change_turn.
+  assert(history(Updated_history)).
 
 %%% Reverts the last update thanks to the info inside history:
 %%% - retracts all the cells that had been asserted in the last board update
 %%% - asserts all the cells that had been retracted in the last board update
-%%% - changes the turn
 %%% - updates the history, erasing the last update
-% change_turn
+% undo_last_update
 undo_last_update :-
   retract(history([(Last_retracted_list, Last_asserted_list) | Older_history])),
   retract_these(Last_asserted_list),
   assert_these(Last_retracted_list),
-  assert(history(Older_history)),
-  change_turn.
+  assert(history(Older_history)).
 
 
 new_position_not_under_check(Cells_to_retract, Cells_to_assert, Color) :-
   update_board(Cells_to_retract, Cells_to_assert),
   (
     (
-      not(under_check(Color)),
+      not under_check(Color),
       undo_last_update,  % modifying the knowledge base! (and changing turn...)
       true,
       !
@@ -157,7 +138,7 @@ last_moved_compact([]) :- last_moved([]).
 last_moved_compact([[X1,Y1], [X2,Y2]]) :- last_moved([cell(point(X1,Y1),_), cell(point(X2,Y2),_)]).
 last_moved_compact([[X1,Y1], [X2,Y2], [X3,Y3], [X4,Y4]]) :- % for castling, where 4 cells are involved
   last_moved([cell(point(X1,Y1),_), cell(point(X2,Y2),_), cell(point(X3,Y3),_), cell(point(X4,Y4),_)]).
-  
+
 
 %%% Utility for multiple retractions
 % retract_these(+List)
@@ -175,10 +156,10 @@ assert_these([Head | Tail]) :- assert(Head), assert_these(Tail).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% under_enemy_attack(+P)
-under_enemy_attack(P) :-
-  cell(Pi, Pi_content),
-  legal_move(Pi, P),
+% under_attack(+P)
+under_attack(P) :-
+  cell(Pi, Piece),
+  legal_move(Piece, Pi, P),
   !.  % green cut
 
 % under_check(+Color)
@@ -186,16 +167,19 @@ under_check(Color) :-
   king(K),
   team(K, Color),
   cell(P, K),
-  under_enemy_attack(P),
+  under_attack(P),
   !.  % green cut
 
-% under_stall(+Color)
-under_stall(Color) :-
+
+% stalemate
+stalemate :-
+  turn(Color),
   not under_check(Color),
   not can_move(Color).
 
-% under_checkmate(+Color)
-under_checkmate(Color) :-
+% checkmate
+checkmate :-
+  turn(Color),
   under_check(Color),
   not can_move(Color).
 
@@ -233,29 +217,28 @@ only_kings_on_board :-
 % never_moved(?P)
 never_moved(P) :-
   history(H),
-  cell(P,_),
-  never_moved(P, H).
+  cell(P, P_content),
+  never_moved(cell(P, P_content), H).
 
-% never_moved(+P, +History)
-never_moved(P, []).
-never_moved(P, [(Last_retracted_list, Last_asserted_list) | Older_history]) :-
-  not member(cell(P, _), Last_retracted_list),
-  not member(cell(P, _), Last_asserted_list),
-  never_moved(P, Older_history).
+% never_moved(+Cell, +History)
+never_moved(Cell, []).
+never_moved(Cell, [(Last_retracted_list, Last_asserted_list) | Older_history]) :-
+  not member(Cell, Last_retracted_list),
+  % not member(Cell, Last_asserted_list),
+  never_moved(Cell, Older_history).
 
 
 % can_move(+Color)
 can_move(Color) :-
-  cell(P0, Ally),
   team(Ally, Color),
-  available_move(P0, _),
+  cell(P0, Ally),
+  legal_move(Ally, P0, _),
   !. % green cut
 
 
-% available_move(+Piece, +P0, ?P)
-available_move(P0, P) :- legal_move(P0, P).
-available_move(P0, P) :- legal_short_castle(P0, P).
-available_move(P0, P) :- legal_long_castle(P0, P).
+% available_move(+P0, ?P)
+available_move(P0, P) :- cell(P0, Piece), legal_move(Piece, P0, P).
+available_move(P0, P) :- cell(P0, Piece), legal_castle(Piece, P0, P).
 
 % available_moves(+P0, ?Points_list)
 available_moves(P0, Coordinates_list) :- findall(P, available_move(P0, P), Coordinates_list).
@@ -267,59 +250,53 @@ available_moves_compact([X0,Y0], Coordinates_list) :- findall([X,Y], available_m
 %%% Move the Piece, if possible, from P0 to P
 % do_move(+Piece, +P0, +P)
 do_move(Piece, P0, P) :-
-  move_integrity_check(Piece, P0, P),
   not must_promote(Piece, P), % when reaching the last row, a pawn cannot move without promotion
+  turn(Color),
+  team(Piece, Color),
+  legal_move(Piece, P0, P),
   cell(P, P_content),
   update_board(
     [cell(P0,Piece), cell(P,P_content)], % things to retract
     [cell(P0,e), cell(P,Piece)]          % things to assert
-  ).
+  ),
+  change_turn.
 
 %%% Move the Piece, if possible, from P0 to P and promote it to Promoted_piece
 % do_move_and_promote(+Piece, +P0, +P, +Promoted_piece)
 do_move_and_promote(Piece, P0, P, Promoted_piece) :-
-  move_integrity_check(Piece, P0, P),
   must_promote(Piece, P),
-  legal_promotion(Piece, To_piece),
+  legal_promotion(Piece, Promoted_piece),
+  turn(Color),
+  team(Piece, Color),
+  legal_move(Piece, P0, P),
   cell(P, P_content),
   update_board(
     [cell(P0, Piece), cell(P, P_content)],  % things to retract
     [cell(P0, e), cell(P, Promoted_piece)]  % things to assert
-  ).
+  ),
+  change_turn.
+
 
 do_short_castle(Piece, P0, P2) :-
+  turn(Color),
+  team(Piece, Color),
+  legal_castle(Piece, P0, P2),
   steps_east(P0, P1, 1),
   steps_east(P0, P2, 2), % where the king wants to go
   steps_east(P0, P3, 3), % where the allied tower is
-  castle_integrity_check(Piece, P0, P),
-  update_board_for_castle(Piece, P0, P1, P2, P3).
+  update_board_for_castle(Piece, P0, P1, P2, P3),
+  change_turn.
 
 do_long_castle(Piece, P0, P2) :-
-  castle_integrity_check(Piece, P0, P),
+  turn(Color),
+  team(Piece, Color),
+  legal_castle(Piece, P0, P2),
   steps_west(P0, P1, 1),
   steps_west(P0, P2, 2), % where the king wants to go
   steps_west(P0, P4, 4), % where the allied tower is
-  update_board_for_castle(Piece, P0, P1, P2, P4).
+  update_board_for_castle(Piece, P0, P1, P2, P4),
+  change_turn.
 
-
-% move_integrity_check(+Piece, +P0, +P)
-move_integrity_check(Piece, P0, P) :-
-  (result(nothing); result(under_check)),
-  cell(P0, Piece),
-  cell(P, P_content),
-  turn(Color),
-  team(Piece, Color),
-  legal_move(P0, P).
-
-% castle_integrity_check(+Piece, +P0, +P)
-castle_integrity_check(Piece, P0, P) :-
-  result(nothing),
-  cell(P0, Piece),
-  turn(Color),
-  team(Piece, Color),
-  king(Piece),
-  legal_castle(P0, P).
-  
 
 % update_board_for_castle(+King, +P0, +P1, +P2, +PR)
 update_board_for_castle(King, P0, P1, P2, PR) :-
@@ -335,17 +312,18 @@ update_board_for_castle(King, P0, P1, P2, PR) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% legal_move(+P0, ?P)
-legal_move(P0, P) :-
-  cell(P0,P0_content),
+% legal_move(?Piece, +P0, ?P)
+legal_move(Piece, P0, P) :-
+  cell(P0,Piece),
   cell(P,P_content),
-  legal(cell(P0,P0_content), cell(P,P_content)),
-  team(P0_content, Color),
+  legal(cell(P0,Piece), cell(P,P_content)),
+  team(Piece, Color),
   new_position_not_under_check(
-    [cell(P0,P0_content), cell(P,P_content)], % things to retract
-    [cell(P0,e), cell(P,P0_content)],         % things to assert
+    [cell(P0,Piece), cell(P,P_content)],
+    [cell(P0,e), cell(P,Piece)],
     Color
   ).
+
 
 
 %%% PAWN %%%
@@ -360,7 +338,7 @@ legal(cell(P0,P0_content), cell(P,e)) :-
   never_moved(P0),
   steps_forward(P0, P1, 1),
   cell(P1, e).
-  
+
 legal(cell(P0,P0_content), cell(P,P_content)) :-
   pawn(P0_content),
   ( steps_forward_right(P0, P, 1) ; steps_forward_left(P0, P, 1) ),
@@ -410,44 +388,42 @@ legal(cell(P0,P0_content), cell(P,P_content)) :- % excluding castling, see below
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% legal_short_castle(+P0, ?P2)
-legal_short_castle(P0, P2) :-
-  cell(P0, P0_content),
-  king(P0_content),
-  team(P0_content, Color),
+% legal_castle(+Piece, P0, P2)
+legal_castle(Piece, P0, P) :-
+  cell(P0, Piece),
+  king(Piece),
   never_moved(P0),
+  not under_attack(P0),
+  ( legal_short(Piece, P0, P) ; legal_long(Piece, P0, P) ).
+
+
+legal_short(Piece, P0, P2) :-
   steps_east(P0, P2, 2), % where the king wants to go
   steps_east(P0, P1, 1),
   steps_east(P0, P3, 3), % east rook position
   cell(P1, e),
   cell(P2, e),
   never_moved(P3),
-  not under_enemy_attack(P0), % not under_check(Color),
-  new_position_not_under_check([cell(P0,P0_content)], [cell(P1,e)], Color),
-  new_position_not_under_check([cell(P0,P0_content)], [cell(P2,e)], Color).
+  team(Piece, Color),
+  new_position_not_under_check([cell(P0,Piece), cell(P1,e)], [cell(P0,e), cell(P1,Piece)], Color),
+  new_position_not_under_check([cell(P0,Piece), cell(P2,e)], [cell(P0,e), cell(P2,Piece)], Color).
 
-% legal_long_castle(+P0, ?P2)
-legal_long_castle(P0, P2) :-
-  cell(P0, P0_content),
-  king(P0_content),
-  team(P0_content, Color),
-  never_moved(P0),
+legal_long(Piece, P0, P2) :-
   steps_west(P0, P2, 2), % where the king wants to go
   steps_west(P0, P1, 1),
   steps_west(P0, P3, 3),
-  steps_east(P0, P4, 4), % east rook position
+  steps_west(P0, P4, 4), % west rook position
   cell(P1, e),
+  print('Hello1'),
   cell(P2, e),
+  print('Hello2'),
   cell(P3, e),
+  print('Hello3'),
   never_moved(P4),
-  not under_enemy_attack(P0), % not under_check(Color),
-  new_position_not_under_check([cell(P0,P0_content)], [cell(P1,e)], Color),
-  new_position_not_under_check([cell(P0,P0_content)], [cell(P2,e)], Color).
-
-
-% legal_castle(P0, P2)
-legal_castle(P0, P2) :- legal_short_castle(P0, P2).
-legal_castle(P0, P2) :- legal_long_castle(P0, P2).
+  print('Hello?'),
+  team(Piece, Color),
+  new_position_not_under_check([cell(P0,Piece), cell(P1,e)], [cell(P0,e), cell(P1,Piece)], Color),
+  new_position_not_under_check([cell(P0,Piece), cell(P2,e)], [cell(P0,e), cell(P2,Piece)], Color).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
