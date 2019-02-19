@@ -53,9 +53,7 @@ export default {
         }
       } else {
         let selection = this.$store.state.selection // keep it for the deselection!
-        let availableMoves = this.$store.state.availableMoves // keep it for the deselection!
-        this.$store.commit('deselectPiece')
-        if (this.$store.state.playerColor === this.$store.getters.pieceColor(selection.piece) && this.isArrayInArray([this.x, this.y], availableMoves)) {
+        if (this.$store.state.playerColor === this.$store.getters.pieceColor(selection.piece)) {
           let payload = {
             piece: selection.piece,
             startPoint: selection.coordinates,
@@ -68,6 +66,7 @@ export default {
           else if (this.wantsToLongCastle(selection)) this.$store.dispatch('doLongCastle', payload)
           else this.$store.dispatch('doMove', payload)
         }
+        this.$store.commit('deselectPiece')
       }
     },
     containsMyPieceAndIsMyTurn () {
@@ -82,7 +81,7 @@ export default {
       return selection.piece === this.$store.getters.myKing && selection.coordinates[0] === this.x + 2
     },
     mustPromote (selection) {
-      return selection.piece === this.$store.getters.myPawn && (this.y === 0 || this.y === 7)
+      return selection.piece === this.$store.getters.myPawn && ((this.y === 0 && this.$store.state.selection.coordinates[1] === 1) || (this.y === 7 && this.$store.state.selection.coordinates[1] === 6))
     },
     isArrayInArray (item, arr) {
       return arr.some(elem => JSON.stringify(elem) === JSON.stringify(item))
