@@ -318,10 +318,16 @@ legal_move(Piece, P0, P) :-
   cell(P,P_content),
   legal(cell(P0,Piece), cell(P,P_content)),
   team(Piece, Color),
-  new_position_not_under_check(
-    [cell(P0,Piece), cell(P,P_content)],
-    [cell(P0,e), cell(P,Piece)],
-    Color
+  (
+    new_position_not_under_check(
+	    [cell(P0,Piece), cell(P,P_content)],
+	    [cell(P0,e), cell(P,Piece)],
+	    Color
+	  ) ; ( % NB !!!
+	    king(P_content),
+	    turn(Current_turn_color),
+      team(P_content, Current_turn_color)
+	  )
   ).
 
 
@@ -406,7 +412,6 @@ legal_short(Piece, P0, P2) :-
   team(Piece, Color),
   new_position_not_under_check([cell(P0,Piece), cell(P1,e)], [cell(P0,e), cell(P1,Piece)], Color),
   new_position_not_under_check([cell(P0,Piece), cell(P2,e)], [cell(P0,e), cell(P2,Piece)], Color).
-  % See last line in legal_move
 
 legal_long(Piece, P0, P2) :-
   steps_west(P0, P2, 2), % where the king wants to go
@@ -420,7 +425,6 @@ legal_long(Piece, P0, P2) :-
   team(Piece, Color),
   new_position_not_under_check([cell(P0,Piece), cell(P1,e)], [cell(P0,e), cell(P1,Piece)], Color),
   new_position_not_under_check([cell(P0,Piece), cell(P2,e)], [cell(P0,e), cell(P2,Piece)], Color).
-  % See last line in legal_move
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
