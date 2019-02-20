@@ -54,11 +54,12 @@ enemies(Piece1, Piece2) :-
   Color1 \= Color2.
 
 % result(?R)
-result(white_won) :- turn(black), checkmate, !.
-result(black_won) :- turn(white), checkmate, !.
+result(white_won) :- checkmate, turn(black), !.
+result(black_won) :- checkmate, turn(white), !.
 result(draw) :- stalemate, !.
 % result(draw) :- only_kings_on_board, !.
-result(check) :- turn(C), under_check(C), !.
+result(white_in_check) :- turn(white), under_check(white), !.
+result(black_in_check) :- turn(black), under_check(black), !.
 result(nothing).
 
 
