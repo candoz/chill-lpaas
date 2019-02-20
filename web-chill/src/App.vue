@@ -10,19 +10,20 @@ export default {
   data () {
     return {
       generalPolling: null,
-      chessboardPolling: null
+      chessboardPolling: null,
+      serverUrl: 'http://' + window.location.host
     }
   },
   methods: {
     pollData () {
       this.generalPolling = setInterval(() => {
-        this.$store.dispatch('pollResult', 'http://localhost:5000/result')
-        this.$store.dispatch('pollTurn', 'http://localhost:5000/turn')
-        this.$store.dispatch('pollLastMoved', 'http://localhost:5000/lastmoved')
+        this.$store.dispatch('pollResult', this.serverUrl + '/result')
+        this.$store.dispatch('pollTurn', this.serverUrl + '/turn')
+        this.$store.dispatch('pollLastMoved', this.serverUrl + '/lastmoved')
         // this.$store.dispatch('generalPoll')
       }, 100)
       this.chessboardPolling = setInterval(() => {
-        this.$store.dispatch('pollChessboard', 'http://localhost:5000/chessboard')
+        this.$store.dispatch('pollChessboard', this.serverUrl + '/chessboard')
       }, 50)
     }
   },

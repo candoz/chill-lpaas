@@ -9,7 +9,8 @@ retryInterceptor(axios, {
 const loggerUtility = require('./loggerUtility')
 const logger = loggerUtility.winstonLogger
 
-const lpaasUrl = 'http://lpaas-ws:8080/lpaas'
+const lpaasIP = process.env.LPAASIP || process.argv[2] || 'localhost'
+const lpaasUrl = 'http://' + lpaasIP + ':8080/lpaas'
 
 const theoryPath = lpaasUrl + '/theories/chill'
 const goalPath = lpaasUrl + '/goals'

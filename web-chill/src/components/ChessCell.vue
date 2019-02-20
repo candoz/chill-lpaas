@@ -42,7 +42,6 @@ export default {
       if (this.$store.state.selection == null) {
         if (this.containsMyPieceAndIsMyTurn()) {
           this.$store.dispatch('pollAvailableMoves', {
-            url: 'http://localhost:5000/move/available',
             x: this.x,
             y: this.y
           })

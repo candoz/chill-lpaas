@@ -5,6 +5,8 @@ import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex)
 
+const serverUrl = 'http://' + window.location.host
+
 const PlayerColor = {
   BLACK: 'black',
   WHITE: 'white'
@@ -104,7 +106,7 @@ export const store = new Vuex.Store({
   },
   actions: {
     setChessboard: context => {
-      axios.post('http://localhost:5000/chessboard').then(response => {
+      axios.post(serverUrl + '/chessboard').then(response => {
         context.state.selection = null
         context.state.lastMove = []
         context.state.availableMoves = []
@@ -115,7 +117,7 @@ export const store = new Vuex.Store({
     },
     pollAvailableMoves: (context, payload) => {
       let params = { startPoint: '[' + payload.x + ',' + payload.y + ']' }
-      axios.get(payload.url, { params: params }, { headers: {'Content-Type': 'application/json'} }).then(response => {
+      axios.get(serverUrl + '/move/available', { params: params }, { headers: {'Content-Type': 'application/json'} }).then(response => {
         context.commit('setAvailableMoves', response.data)
       }).catch(error => {
         console.log(error)
@@ -136,6 +138,8 @@ export const store = new Vuex.Store({
       })
     },
     pollChessboard: (context, url) => {
+      console.log('TESSSSSST')
+      console.log(serverUrl)
       axios.get(url).then(response => {
         context.commit('setChessboard', response.data)
       }).catch(error => {
@@ -150,14 +154,14 @@ export const store = new Vuex.Store({
       })
     },
     generalPoll: (context) => {
-      axios.get('http://localhost:5000/result')
+      axios.get(serverUrl + '/result')
         .then(response => {
           context.commit('setResult', response.data)
         }).catch(resultError => console.log(resultError)).finally(() => {
-          axios.get('http://localhost:5000/chessboard').then(response => {
+          axios.get(serverUrl + '/chessboard').then(response => {
             context.commit('setChessboard', response.data)
           }).catch(chessboardError => console.log(chessboardError)).finally(() => {
-            axios.get('http://localhost:5000/turn')
+            axios.get(serverUrl + '/turn')
               .then(response => {
                 context.commit('setCurrentTurn', response.data)
               }).catch(turnError => console.log(turnError))
@@ -165,7 +169,7 @@ export const store = new Vuex.Store({
         })
     },
     doMove: function (context, payload) {
-      axios.post('http://localhost:5000/move', {
+      axios.post(serverUrl + '/move', {
         piece: payload.piece,
         startPoint: payload.startPoint,
         endPoint: payload.endPoint
@@ -176,7 +180,7 @@ export const store = new Vuex.Store({
       })
     },
     doMoveWithPromotion: function (context, payload) {
-      axios.post('http://localhost:5000/move/withpromotion', {
+      axios.post(serverUrl + '/move/withpromotion', {
         piece: payload.piece,
         startPoint: payload.startPoint,
         endPoint: payload.endPoint,
@@ -188,7 +192,7 @@ export const store = new Vuex.Store({
       })
     },
     doShortCastle: function (context, payload) {
-      axios.post('http://localhost:5000/move/shortcastle', {
+      axios.post(serverUrl + '/move/shortcastle', {
         piece: payload.piece,
         startPoint: payload.startPoint,
         endPoint: payload.endPoint
@@ -199,7 +203,7 @@ export const store = new Vuex.Store({
       })
     },
     doLongCastle: function (context, payload) {
-      axios.post('http://localhost:5000/move/longcastle', {
+      axios.post(serverUrl + '/move/longcastle', {
         piece: payload.piece,
         startPoint: payload.startPoint,
         endPoint: payload.endPoint

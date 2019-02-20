@@ -10,5 +10,7 @@ services:
       - "5000:5000"
     links:
      - lpaas-ws
+    environment:
+     LPAASIP: "lpaas-ws"
     depends_on:
       - lpaas-ws
