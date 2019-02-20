@@ -4,7 +4,7 @@ const axios = require('axios')
 const loggerUtility = require('./loggerUtility')
 const logger = loggerUtility.winstonLogger
 
-const lpaasIP = process.env.LPAASIP || process.argv[2] || 'localhost'
+const lpaasIP = process.env.LPAAS_IP || process.argv[2] || 'localhost'
 const lpaasUrl = 'http://' + lpaasIP + ':8080/lpaas'
 
 const theoryPath = lpaasUrl + '/theories/chill'

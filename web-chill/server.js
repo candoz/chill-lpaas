@@ -215,7 +215,7 @@ function startChillServer () {
           startChillServer()
           logger.error('Connection to LPaaS failed: %s, retrying...', error)
         })
-    }, 5000)
+    }, process.env.WAIT_LPAAS || 5000)
   } else {
     setInterval(() => {
       logger.log('info', 'Server polling LPaaS to: %s', url)
