@@ -17,7 +17,8 @@ const ResultStatus = {
   BLACK_WON: 'black_won',
   WHITE_WON: 'white_won',
   DRAW: 'draw',
-  UNDER_CHECK: 'check'
+  BLACK_UNDER_CHECK: 'black_in_check',
+  WHITE_UNDER_CHECK: 'white_in_check'
 }
 
 const ChessPiece = Object.freeze({
@@ -138,8 +139,6 @@ export const store = new Vuex.Store({
       })
     },
     pollChessboard: (context, url) => {
-      console.log('TESSSSSST')
-      console.log(serverUrl)
       axios.get(url).then(response => {
         context.commit('setChessboard', response.data)
       }).catch(error => {

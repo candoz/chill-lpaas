@@ -19,12 +19,12 @@ export default {
       this.generalPolling = setInterval(() => {
         this.$store.dispatch('pollResult', this.serverUrl + '/result')
         this.$store.dispatch('pollTurn', this.serverUrl + '/turn')
-        this.$store.dispatch('pollLastMoved', this.serverUrl + '/lastmoved')
         // this.$store.dispatch('generalPoll')
-      }, 100)
+      }, 600)
       this.chessboardPolling = setInterval(() => {
         this.$store.dispatch('pollChessboard', this.serverUrl + '/chessboard')
-      }, 50)
+        this.$store.dispatch('pollLastMoved', this.serverUrl + '/lastmoved')
+      }, 200)
     }
   },
   beforeDestroy () {

@@ -4,6 +4,8 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
 const boom = require('boom')
+const url = 'http://localhost:5000'
+const axios = require('axios')
 
 const loggerUtility = require('./serverSrc/loggerUtility')
 const logger = loggerUtility.winstonLogger
@@ -147,6 +149,8 @@ app.post('/chessboard', (req, res, next) => {
 })
 
 app.get('/result', (req, res, next) => {
+  console.log(resultCache)
+
   res.send(resultCache)
 })
 
@@ -213,13 +217,18 @@ function startChillServer () {
         })
     }, 5000)
   } else {
+    setInterval(() => {
+      logger.log('info', 'Server polling LPaaS to: %s', url)
+      axios.get(url + '/chessboard').catch(error => logger.log('error', 'Fail to poll lpaas chessboard %s', error))
+        .finally(() => axios.get(url + '/turn').catch(error => logger.log('error', 'Fail to poll lpaas turn %s', error))
+          .finally(() => axios.get(url + '/result').catch(error => logger.log('error', 'Fail to poll lpaas result %s', error))
+            .finally(() => axios.get(url + '/lastmoved')).catch(error => logger.log('error', 'Fail to poll lpaas last moved %s', error))
+          )
+        )
+    }, 4000)
     lpaas.loadChillTheory(
-      response => {
-        logger.log('info', 'Chill Loaded')
-      },
-      error => {
-        logger.log('error', 'Failed to load theory to LPaaS: %s', error)
-      }
+      response => logger.log('info', 'Chill Loaded'),
+      error => logger.log('error', 'Failed to load theory to LPaaS: %s', error)
     )
     lpaas.loadDefaultGoalAndSolution(() => updateGameState())
   }

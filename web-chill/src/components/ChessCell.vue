@@ -24,17 +24,17 @@ export default {
       return this.piece === this.$store.state.chessPiecesEnum.WK.rep ||
         this.piece === this.$store.state.chessPiecesEnum.BK.rep
     },
-    containingCurrentTurnKing () {
-      return this.containingAKing &&
-        this.$store.getters.pieceColor(this.piece) === this.$store.state.currentTurn
-    },
     selected () {
       let selection = this.$store.state.selection
       return selection != null && JSON.stringify(selection.coordinates) === JSON.stringify([this.x, this.y])
     },
     underCheck () {
-      return this.$store.state.result === this.$store.state.chessResultEnum.UNDER_CHECK &&
-        this.containingCurrentTurnKing
+      return this.containingAKing && (
+        (this.$store.state.result === this.$store.state.chessResultEnum.BLACK_UNDER_CHECK &&
+        this.$store.getters.pieceColor(this.piece) === this.$store.state.playerColorEnum.BLACK) ||
+        (this.$store.state.result === this.$store.state.chessResultEnum.WHITE_UNDER_CHECK &&
+        this.$store.getters.pieceColor(this.piece) === this.$store.state.playerColorEnum.WHITE)
+      )
     }
   },
   methods: {
