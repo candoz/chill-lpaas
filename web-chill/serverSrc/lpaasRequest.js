@@ -109,96 +109,102 @@ function loadDefaultGoalAndSolution (callback) {
 
 function updateGameResultSolution (callback) {
   let time
-  axios.delete(resultSolutionUrl).then(response => {
-    let body = {
-      goals: resultGoalUrl,
-      theory: theoryPath
-    }
-    time = Date.now()
-    axios.post(solutionPath, body, {
-      headers: solutionsHeaders,
-      params: {
-        skip: 0,
-        limit: 1,
-        hook: resultSolutionHook
+  axios.delete(resultSolutionUrl)
+    .then(response => logger.log('info', 'Deleted old result solution'))
+    .catch(err => logger.log('error', 'Failed to delete old result solution: %s', err.response.status))
+    .finally(() => {
+      let body = {
+        goals: resultGoalUrl,
+        theory: theoryPath
       }
-    }).then(lpaasResponse => {
-      callback(lpaasResponse.data.solutions)
-      logger.log('info', 'Result Calculation Timer: %s', (Date.now() - time))
-    }).catch(err => {
-      logger.log('error', 'Failed to post new result solution: %s', err.response.status)
+      time = Date.now()
+      axios.post(solutionPath, body, {
+        headers: solutionsHeaders,
+        params: {
+          skip: 0,
+          limit: 1,
+          hook: resultSolutionHook
+        }
+      }).then(lpaasResponse => {
+        callback(lpaasResponse.data.solutions)
+        logger.log('info', 'Result Calculation Timer: %s', (Date.now() - time))
+      }).catch(err => {
+        logger.log('error', 'Failed to post new result solution: %s', err.response.status)
+      })
     })
-  }).catch(err => {
-    logger.log('error', 'Failed to delete old result solution: %s', err.response.status)
-  })
 }
 
 function updateGameTurnSolution (callback) {
-  axios.delete(turnSolutionUrl).then(response => {
-    let body = {
-      goals: turnGoalUrl,
-      theory: theoryPath
-    }
-    axios.post(solutionPath, body, {
-      headers: solutionsHeaders,
-      params: {
-        skip: 0,
-        limit: 1,
-        hook: turnSolutionHook
+  axios.delete(turnSolutionUrl)
+    .then(response => logger.log('info', 'Deleted old turn solution'))
+    .catch(err => logger.log('error', 'Failed to delete old turn solution: %s', err.response.status))
+    .finally(() => {
+      let body = {
+        goals: turnGoalUrl,
+        theory: theoryPath
       }
-    }).then(lpaasResponse => {
-      callback(lpaasResponse)
-      logger.log('info', 'Turn Solution Updated')
-    }).catch(err => {
-      logger.log('error', 'Failed to post new turn solution: %s', err.response.status)
+      axios.post(solutionPath, body, {
+        headers: solutionsHeaders,
+        params: {
+          skip: 0,
+          limit: 1,
+          hook: turnSolutionHook
+        }
+      }).then(lpaasResponse => {
+        callback(lpaasResponse)
+        logger.log('info', 'Turn Solution Updated')
+      }).catch(err => {
+        logger.log('error', 'Failed to post new turn solution: %s', err.response.status)
+      })
     })
-  }).catch(err => {
-    logger.log('error', 'Failed to delete old turn solution: %s', err.response.status)
-  })
 }
 
 function updateGameLastMoveSolution (callback) {
-  axios.delete(lastMoveSolutionUrl).then(response => {
-    let body = {
-      goals: lastMoveGoalUrl,
-      theory: theoryPath
-    }
-    axios.post(solutionPath, body, {
-      headers: solutionsHeaders,
-      params: {
-        skip: 0,
-        limit: 1,
-        hook: lastMoveSolutionHook
+  axios.delete(lastMoveSolutionUrl)
+    .then(response => logger.log('info', 'Deleted old last move solution'))
+    .catch(err => logger.log('error', 'Failed to delete old last move solution: %s', err.response.status))
+    .finally(() => {
+      let body = {
+        goals: lastMoveGoalUrl,
+        theory: theoryPath
       }
-    }).then(lpaasResponse => {
-      callback(lpaasResponse)
-      logger.log('info', 'Last Move Solution Updated')
-    }).catch(err => {
-      logger.log('error', 'Failed to post new last move solution: %s', err.response.status)
+      axios.post(solutionPath, body, {
+        headers: solutionsHeaders,
+        params: {
+          skip: 0,
+          limit: 1,
+          hook: lastMoveSolutionHook
+        }
+      }).then(lpaasResponse => {
+        callback(lpaasResponse)
+        logger.log('info', 'Last Move Solution Updated')
+      }).catch(err => {
+        logger.log('error', 'Failed to post new last move solution: %s', err.response.status)
+      })
     })
-  }).catch(err => {
-    logger.log('error', 'Failed to delete old last move solution: %s', err.response.status)
-  })
 }
 
 function updateGameChessboardSolution (callback) {
-  axios.delete(chessboardSolutionUrl).then(response => {
-    let body = {
-      goals: chessboardGoalUrl,
-      theory: theoryPath
-    }
-    axios.post(solutionPath, body, {
-      headers: solutionsHeaders,
-      params: {
-        skip: 0,
-        limit: 1,
-        hook: chessboardSolutionHook
+  axios.delete(chessboardSolutionUrl)
+    .then(response => logger.info('info', 'Deleted old chessboard solution'))
+    .catch(err => logger.log('error', 'Failed to delete old chessboard solution: ' + err.response.status))
+    .finally(() => {
+      let body = {
+        goals: chessboardGoalUrl,
+        theory: theoryPath
       }
-    }).then(lpaasResponse => {
-      callback(lpaasResponse)
-      logger.log('info', 'Chessboard Solution Updated')
-    }).catch(err => logger.log('error', 'Failed to post new chessboard solution: ' + err.response.status))
-  }).catch(err => logger.log('error', 'Failed to delete old chessboard solution: ' + err.response.status))
+      axios.post(solutionPath, body, {
+        headers: solutionsHeaders,
+        params: {
+          skip: 0,
+          limit: 1,
+          hook: chessboardSolutionHook
+        }
+      }).then(lpaasResponse => {
+        callback(lpaasResponse)
+        logger.log('info', 'Chessboard Solution Updated')
+      }).catch(err => logger.log('error', 'Failed to post new chessboard solution: ' + err.response.status))
+    })
 }
 
 function genericUpdateBySolution (goalName, prologBody, callback) {
