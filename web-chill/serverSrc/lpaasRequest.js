@@ -1,7 +1,10 @@
 const fs = require('fs')
 const axios = require('axios')
-const axiosRetry = require('axios-retry')
-axiosRetry(axios, { retries: 3 })
+const retryInterceptor = require('axios-retry-interceptor')
+retryInterceptor(axios, {
+  maxAttempts: 3,
+  waitTime: 1000
+})
 
 const loggerUtility = require('./loggerUtility')
 const logger = loggerUtility.winstonLogger
