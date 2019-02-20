@@ -223,8 +223,8 @@ never_moved(P) :-
 % never_moved(+Cell, +History)
 never_moved(Cell, []).
 never_moved(Cell, [(Last_retracted_list, Last_asserted_list) | Older_history]) :-
-  not member(Cell, Last_retracted_list),
-  % not member(Cell, Last_asserted_list),
+  % not member(Cell, Last_retracted_list),
+  not member(Cell, Last_asserted_list),
   never_moved(Cell, Older_history).
 
 
