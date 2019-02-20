@@ -35,7 +35,10 @@ app.post('/move', (req, res, next) => {
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
     updateGameState()
+    console.log(lpaasResponse)
     res.send(lpaasResponse)
+  }, lpaasError => {
+    res.sendStatus(500)
   })
 })
 
@@ -48,6 +51,8 @@ app.post('/move/withpromotion', (req, res, next) => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
     updateGameState()
     res.send(lpaasResponse)
+  }, lpaasError => {
+    res.sendStatus(500)
   })
 })
 
@@ -60,6 +65,8 @@ app.post('/move/longcastle', (req, res, next) => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
     updateGameState()
     res.send(lpaasResponse)
+  }, lpaasError => {
+    res.sendStatus(500)
   })
 })
 
@@ -72,6 +79,8 @@ app.post('/move/shortcastle', (req, res, next) => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
     updateGameState()
     res.send(lpaasResponse)
+  }, lpaasError => {
+    res.sendStatus(500)
   })
 })
 

@@ -129,7 +129,19 @@ function updateGameResultSolution (callback) {
         callback(lpaasResponse.data.solutions)
         logger.log('info', 'Result Calculation Timer: %s', (Date.now() - time))
       }).catch(err => {
-        logger.log('error', 'Failed to post new result solution: %s', err.response.status)
+        logger.log('error', 'Failed to post new result solution: %s, retrying second time...', err.response.status)
+        setTimeout(() => {
+          axios.post(solutionPath, body, {
+            headers: solutionsHeaders,
+            params: {
+              skip: 0,
+              limit: 1,
+              hook: resultSolutionHook
+            }
+          }).then(lpaasResponse => {
+            callback(lpaasResponse.data.solutions)
+          }).catch(err => logger.log('error', 'Failed to post new result solution: %s', err.response.status))
+        }, 4000)
       })
     })
 }
@@ -207,7 +219,7 @@ function updateGameChessboardSolution (callback) {
     })
 }
 
-function genericUpdateBySolution (goalName, prologBody, callback) {
+function genericUpdateBySolution (goalName, prologBody, callback, error) {
   let body = prologBody
   axios.post(goalPath, body, {params: { name: goalName }, headers: headers})
     .then(goalResponse => {
@@ -227,11 +239,11 @@ function genericUpdateBySolution (goalName, prologBody, callback) {
         callback(solutionResponse.data.solutions)
       }).catch(solutionError => {
         deleteLPaaSEntity(goalPath + '/' + goalName)
-        callback(solutionError)
+        error(solutionError)
       })
     }).catch(goalError => {
       deleteLPaaSEntity(goalPath + '/' + goalName)
-      callback(goalError)
+      error(goalError)
     })
 }
 

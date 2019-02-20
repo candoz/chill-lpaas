@@ -171,6 +171,8 @@ export const store = new Vuex.Store({
         endPoint: payload.endPoint
       }, {
         headers: { 'Content-Type': 'application/json' }
+      }).then(response => {
+        if (response.length > 0) context.state.result = ResultStatus.NOTHING
       })
     },
     doMoveWithPromotion: function (context, payload) {
@@ -181,6 +183,8 @@ export const store = new Vuex.Store({
         promotion: payload.promotion
       }, {
         headers: { 'Content-Type': 'application/json' }
+      }).then(response => {
+        if (response.length > 0) context.state.result = ResultStatus.NOTHING
       })
     },
     doShortCastle: function (context, payload) {
@@ -190,6 +194,8 @@ export const store = new Vuex.Store({
         endPoint: payload.endPoint
       }, {
         headers: { 'Content-Type': 'application/json' }
+      }).then(response => {
+        if (response.length > 0) context.state.result = ResultStatus.NOTHING
       })
     },
     doLongCastle: function (context, payload) {
@@ -199,6 +205,8 @@ export const store = new Vuex.Store({
         endPoint: payload.endPoint
       }, {
         headers: { 'Content-Type': 'application/json' }
+      }).then(response => {
+        if (response.length > 0) context.state.result = ResultStatus.NOTHING
       })
     }
   }
