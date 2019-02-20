@@ -81,7 +81,11 @@ export default {
       return selection.piece === this.$store.getters.myKing && selection.coordinates[0] === this.x + 2
     },
     mustPromote (selection) {
-      return selection.piece === this.$store.getters.myPawn && ((this.y === 0 && this.$store.state.selection.coordinates[1] === 1) || (this.y === 7 && this.$store.state.selection.coordinates[1] === 6))
+      return selection.piece === this.$store.getters.myPawn &&
+        (
+          (this.y === 0 && this.$store.state.selection.coordinates[1] === 1 && this.$store.getters.pieceColor(selection.piece) === this.$store.state.playerColorEnum.BLACK) ||
+          (this.y === 7 && this.$store.state.selection.coordinates[1] === 6 && this.$store.getters.pieceColor(selection.piece) === this.$store.state.playerColorEnum.WHITE)
+        )
     },
     isArrayInArray (item, arr) {
       return arr.some(elem => JSON.stringify(elem) === JSON.stringify(item))

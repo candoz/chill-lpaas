@@ -186,7 +186,7 @@ function updateGameLastMoveSolution (callback) {
 
 function updateGameChessboardSolution (callback) {
   axios.delete(chessboardSolutionUrl)
-    .then(response => logger.info('info', 'Deleted old chessboard solution'))
+    .then(response => logger.log('info', 'Deleted old chessboard solution'))
     .catch(err => logger.log('error', 'Failed to delete old chessboard solution: ' + err.response.status))
     .finally(() => {
       let body = {
