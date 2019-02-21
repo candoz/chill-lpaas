@@ -1,6 +1,12 @@
 <template>
-  <td v-on:click="cellClicked" v-bind:class="[cellColor, selected || lastMoved ? 'selected' : '', (availableAsMove && showingAvailableMoves) ? 'available' : '', underCheck ? 'undercheck' : '']">
-    <img v-bind:src="pieceImg" width="90%" v-if="piece !== 'e'" />
+  <td v-on:click="cellClicked" v-bind:class="[
+    cellColor, selected || lastMoved ? 'selected' : '',
+    (availableAsMove && showingAvailableMoves) ? 'available' : '',
+    underCheck ? 'undercheck' : ''
+  ]">
+    <div v-bind:class="[loading ? 'loader' : '']">
+      <img v-bind:src="pieceImg" width="90%" v-if="piece !== 'e'" />
+    </div>
   </td>
 </template>
 
@@ -35,6 +41,10 @@ export default {
         (this.$store.state.result === this.$store.state.chessResultEnum.WHITE_UNDER_CHECK &&
         this.$store.getters.pieceColor(this.piece) === this.$store.state.playerColorEnum.WHITE)
       )
+    },
+    loading () {
+      return this.$store.state.movingTo != null &&
+      JSON.stringify(this.$store.state.movingTo) === JSON.stringify([this.x, this.y])
     }
   },
   methods: {
@@ -116,6 +126,26 @@ $check-highlight: rgba(252, 77, 77, 1);
 
 .undercheck {
   background-image: radial-gradient(circle, rgba(255,255,255,0) 50%, $check-highlight 100%);
+}
+
+.loader {
+  border: 5px solid #EDECD5;
+  border-radius: 50%;
+  border-top: 5px solid #5B83A9;
+  border-bottom: 5px solid #5B83A9;
+  width: 70%;
+  height: 70%;
+  -webkit-animation: spin 1.8s linear infinite;
+  animation: spin 1.8s linear infinite;
+  margin: auto;
+}
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 </style>

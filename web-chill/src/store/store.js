@@ -60,6 +60,7 @@ export const store = new Vuex.Store({
     showAvailableMoves: true,
     result: ResultStatus.NOTHING,
     ongoingPromotion: null, // { piece: 'wp', startPoint: '[1, 2]', endPoint: '[1, 3]' },
+    movingTo: null, // [x, y]
     chessPiecesEnum: ChessPiece,
     chessResultEnum: ResultStatus,
     playerColorEnum: PlayerColor,
@@ -165,6 +166,7 @@ export const store = new Vuex.Store({
         })
     },
     doMove: function (context, payload) {
+      context.state.movingTo = payload.endPoint
       axios.post(serverUrl + '/move', {
         piece: payload.piece,
         startPoint: payload.startPoint,
@@ -172,6 +174,7 @@ export const store = new Vuex.Store({
       }, {
         headers: { 'Content-Type': 'application/json' }
       }).then(response => {
+        context.state.movingTo = []
         if (response.length > 0) context.state.result = ResultStatus.NOTHING
       })
     },
