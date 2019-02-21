@@ -1,8 +1,10 @@
 const assert = require('assert')
 const axios = require('axios')
-let serverUrl = 'http://localhost:5000'
+const serverUrl = 'http://localhost:5000'
+const msToWaitForInit = 2000
+const maxTestDuration = 20000
 
-function sleep(ms) {
+function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
@@ -14,7 +16,7 @@ describe('Test Checkmate Cases', function () {
 
   it('Testing fool\'s checkmate', async () => {
 
-    await sleep(2000)
+    await sleep(msToWaitForInit)
 
     await axios.post(serverUrl + '/move', {
       piece: 'wp',
@@ -74,5 +76,5 @@ describe('Test Checkmate Cases', function () {
 
     var result = await axios.get(serverUrl + '/result')
     assert.equal(JSON.stringify(result.data), JSON.stringify('white_won'))
-  }).timeout(15000)
+  }).timeout(maxTestDuration)
 })
