@@ -23,6 +23,7 @@ let lastMoveCache = []
 let updatingChessboard = false
 let updatingTurn = false
 let updatingLastMove = false
+let lpaasFound = false
 
 let app = express()
 app.use(serveStatic(path.join(__dirname, 'dist')))
@@ -149,8 +150,6 @@ app.post('/chessboard', (req, res, next) => {
 })
 
 app.get('/result', (req, res, next) => {
-  console.log(resultCache)
-
   res.send(resultCache)
 })
 
@@ -217,6 +216,7 @@ function startChillServer () {
         })
     }, process.env.WAIT_LPAAS || 5000)
   } else {
+    lpaasFound = true
     setInterval(() => {
       logger.log('info', 'Server polling LPaaS to: %s', url)
       axios.get(url + '/chessboard').catch(error => logger.log('error', 'Fail to poll lpaas chessboard %s', error))
@@ -237,6 +237,11 @@ startChillServer()
 
 const port = process.env.PORT || 5000
 app.listen(port)
+
+module.exports = {
+  app: app,
+  lpaasActive: lpaasFound
+}
 
 logger.log('info', 'Chill Web Server Started on port: %s', port)
 
