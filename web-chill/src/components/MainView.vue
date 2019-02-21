@@ -69,7 +69,7 @@ export default {
     }
   },
   mounted: function () {
-    this.$modal.show('end-game-modal')
+    // this.$modal.show('end-game-modal')
     // this.$modal.show('promotion-modal')
   }
 }

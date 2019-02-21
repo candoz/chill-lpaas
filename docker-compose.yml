@@ -25,6 +25,6 @@ services:
      - lpaas-ws
     environment:
      LPAAS_IP: "lpaas-ws"
-     WAIT_LPAAS: 5000
+     WAIT_LPAAS: 7000
     depends_on:
       - lpaas-ws
