@@ -16,7 +16,7 @@ export default {
   computed: {
     cellColor () { return (this.x + this.y) % 2 === 0 ? 'dark' : 'light' },
     lastMoved () { return this.isArrayInArray([this.x, this.y], this.$store.state.lastMove) },
-    availableAsMove () { return this.isArrayInArray([this.x, this.y], this.$store.state.availableMoves) },
+    availableAsMove () { return this.isArrayInArray([this.x, this.y], this.$store.state.availableMoves) && this.$store.state.selection != null },
     showingAvailableMoves () { return this.$store.state.showAvailableMoves },
     piece () { return this.$store.state.chessboard[this.x][this.y] },
     pieceImg () { return require('../assets/' + this.piece + '.png') },
