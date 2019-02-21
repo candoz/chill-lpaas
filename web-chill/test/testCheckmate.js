@@ -3,6 +3,7 @@ const axios = require('axios')
 const serverUrl = 'http://localhost:5000'
 const msToWaitForInit = 2000
 const maxTestDuration = 20000
+const desiredResult = 'white_won'
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -75,6 +76,6 @@ describe('Test Checkmate Cases', function () {
     })
 
     var result = await axios.get(serverUrl + '/result')
-    assert.equal(JSON.stringify(result.data), JSON.stringify('white_won'))
+    assert.equal(JSON.stringify(result.data), JSON.stringify(desiredResult))
   }).timeout(maxTestDuration)
 })
