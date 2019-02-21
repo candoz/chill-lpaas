@@ -169,5 +169,4 @@ describe('Test Short Castling Cases', function () {
     assert.equal(chessboard.data[4][0], kingRep)
     assert.equal(chessboard.data[7][0], rookRep)
   }).timeout(maxTestDuration)
-
 })
