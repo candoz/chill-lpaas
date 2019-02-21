@@ -37,9 +37,8 @@ app.post('/move', (req, res, next) => {
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
-    updateGameState()
+    updateGameState(() => res.send(lpaasResponse))
     console.log(lpaasResponse)
-    res.send(lpaasResponse)
   }, lpaasError => {
     res.sendStatus(500)
   })
@@ -52,8 +51,7 @@ app.post('/move/withpromotion', (req, res, next) => {
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
-    updateGameState()
-    res.send(lpaasResponse)
+    updateGameState(() => res.send(lpaasResponse))
   }, lpaasError => {
     res.sendStatus(500)
   })
@@ -66,8 +64,7 @@ app.post('/move/longcastle', (req, res, next) => {
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
-    updateGameState()
-    res.send(lpaasResponse)
+    updateGameState(() => res.send(lpaasResponse))
   }, lpaasError => {
     res.sendStatus(500)
   })
@@ -80,8 +77,7 @@ app.post('/move/shortcastle', (req, res, next) => {
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
-    updateGameState()
-    res.send(lpaasResponse)
+    updateGameState(() => res.send(lpaasResponse))
   }, lpaasError => {
     res.sendStatus(500)
   })
@@ -245,21 +241,22 @@ module.exports = {
 
 logger.log('info', 'Chill Web Server Started on port: %s', port)
 
-function updateGameState () {
+function updateGameState (callback) {
   lpaas.updateGameResultSolution(solution => {
     let regex = /\((.*?)\)/
     resultCache = regex.exec(solution)[1]
-  })
-  updatingTurn = true
-  lpaas.updateGameTurnSolution(response => {
-    updatingTurn = false
-  })
-  updatingLastMove = true
-  lpaas.updateGameLastMoveSolution(response => {
-    updatingLastMove = false
-  })
-  updatingChessboard = true
-  lpaas.updateGameChessboardSolution(response => {
-    updatingChessboard = false
+    updatingTurn = true
+    lpaas.updateGameTurnSolution(response => {
+      updatingTurn = false
+      updatingLastMove = true
+      lpaas.updateGameLastMoveSolution(response => {
+        updatingLastMove = false
+        updatingChessboard = true
+        lpaas.updateGameChessboardSolution(response => {
+          updatingChessboard = false
+          if (callback) callback(response)
+        })
+      })
+    })
   })
 }

@@ -4,6 +4,8 @@ services:
     build: ../lpaas-ws/
     ports:
       - "8080:8080"
+    logging:
+      driver: none
   web-chill:
     build: ./web-chill/.
     ports: 
@@ -11,6 +13,18 @@ services:
     links:
      - lpaas-ws
     environment:
-     LPAASIP: "lpaas-ws"
+     LPAAS_IP: "lpaas-ws"
+     WAIT_LPAAS: 5000
+    depends_on:
+      - lpaas-ws
+  second-web-chill:
+    build: ./web-chill/.
+    ports: 
+      - "5001:5000"
+    links:
+     - lpaas-ws
+    environment:
+     LPAAS_IP: "lpaas-ws"
+     WAIT_LPAAS: 5000
     depends_on:
       - lpaas-ws
