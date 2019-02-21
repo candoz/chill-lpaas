@@ -8,7 +8,7 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-describe('Test Long Availabel Moves Cases', function () {
+describe('Test Available (possible) moves Cases', function () {
 
   beforeEach( async () => {
     await axios.post(serverUrl + '/chessboard')
