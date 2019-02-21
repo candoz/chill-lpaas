@@ -116,17 +116,6 @@ app.get('/move/available', (req, res, next) => {
   })
 })
 
-app.post('/giveup', (req, res, next) => {
-  let goalName = 'giveup'
-  let body = 'give_up(' + req.body.playerColor + ')'
-
-  lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
-    logger.log('info', 'Movement completed: %s', lpaasResponse)
-    updateGameState()
-    res.send(lpaasResponse)
-  })
-})
-
 app.post('/chessboard', (req, res, next) => {
   logger.log('info', 'Request to reset game state')
   lpaas.deleteLPaaSEntity(
