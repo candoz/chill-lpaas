@@ -10,8 +10,8 @@
       <img class="piece-img" v-bind:src="myKnightImg" width="20%" v-on:click="promote(myKnight)"/>
     </modal>
     <modal id="end-game-modal" name='end-game-modal'>
-      <label id="result-label">Result: {{ result }}</label>
-      <md-button id="md-button" class="md-raised md-primary" @click="newGame">New Game</md-button>
+      <label id="result-label">{{ resultStr }}</label>
+      <md-button class="md-raised md-primary" @click="newGame">New Game</md-button>
     </modal>
   </div>
 </template>
@@ -43,6 +43,12 @@ export default {
         this.$modal.hide('end-game-modal')
       }
       return result
+    },
+    resultStr () {
+      if (this.$store.state.result === 'white_won') return 'White player won'
+      else if (this.$store.state.result === 'black_won') return 'Black player won'
+      else if (this.$store.state.result === 'draw') return 'Game ended in a draw'
+      else return 'Game on!'
     }
   },
   methods: {
@@ -71,8 +77,8 @@ export default {
 
 <style lang="scss">
 
-#md-button {
-  margin: 1.5vmin;
+.md-button {
+  margin: 2.5vmin;
   height: 25px;
   width: 115px;
   color: white;
@@ -88,6 +94,7 @@ export default {
 #result-label {
   display: block;
   margin-top: 5vmin;
+  font-size: 1.2em;
 }
 
 #promotion-label {
