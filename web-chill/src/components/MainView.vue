@@ -11,7 +11,7 @@
     </modal>
     <modal id="end-game-modal" name='end-game-modal'>
       <label id="result-label">{{ resultStr }}</label>
-      <md-button class="md-raised md-primary" @click="newGame">New Game</md-button>
+      <md-button id="modal-button" class="md-raised md-primary" @click="newGame">New Game</md-button>
     </modal>
   </div>
 </template>
@@ -34,16 +34,7 @@ export default {
     myRook () { return this.$store.getters.myRook },
     myBishop () { return this.$store.getters.myBishop },
     myKnight () { return this.$store.getters.myKnight },
-    result () {
-      let result = this.$store.state.result
-      let resultEnum = this.$store.state.chessResultEnum
-      if ((result === resultEnum.WHITE_WON || result === resultEnum.BLACK_WON || result === resultEnum.DRAW)) {
-        this.$modal.show('end-game-modal')
-      } else {
-        this.$modal.hide('end-game-modal')
-      }
-      return result
-    },
+    result () { return this.$store.state.result },
     resultStr () {
       if (this.$store.state.result === 'white_won') return 'White player won'
       else if (this.$store.state.result === 'black_won') return 'Black player won'
@@ -68,6 +59,16 @@ export default {
       this.$store.dispatch('setChessboard')
     }
   },
+  watch: {
+    result (newResult, oldResult) {
+      let resultEnum = this.$store.state.chessResultEnum
+      if ((newResult === resultEnum.WHITE_WON || newResult === resultEnum.BLACK_WON || newResult === resultEnum.DRAW)) {
+        this.$modal.show('end-game-modal')
+      } else {
+        this.$modal.hide('end-game-modal')
+      }
+    }
+  },
   mounted: function () {
     // this.$modal.show('end-game-modal')
     // this.$modal.show('promotion-modal')
@@ -77,7 +78,7 @@ export default {
 
 <style lang="scss">
 
-.md-button {
+#modal-button {
   margin: 2.5vmin;
   height: 25px;
   width: 115px;
@@ -99,6 +100,8 @@ export default {
 
 #promotion-label {
   display: block;
+  margin-top: 1vmin;
+  margin-bottom: 1vmin;
 }
 
 .piece-img {
