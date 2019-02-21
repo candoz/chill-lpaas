@@ -3,7 +3,7 @@ const axios = require('axios')
 let serverUrl = 'http://localhost:5000'
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 describe('Test Checkmate Cases', function () {
@@ -24,8 +24,6 @@ describe('Test Checkmate Cases', function () {
       headers: { 'Content-Type': 'application/json' }
     })
 
-    await sleep(500)
-
     await axios.post(serverUrl + '/move', {
       piece: 'bp',
       startPoint: [4, 6],
@@ -33,8 +31,6 @@ describe('Test Checkmate Cases', function () {
     }, {
       headers: { 'Content-Type': 'application/json' }
     })
-
-    await sleep(500)
 
     await axios.post(serverUrl + '/move', {
       piece: 'wb',
@@ -44,8 +40,6 @@ describe('Test Checkmate Cases', function () {
       headers: { 'Content-Type': 'application/json' }
     })
 
-    await sleep(500)
-
     await axios.post(serverUrl + '/move', {
       piece: 'bn',
       startPoint: [6, 7],
@@ -53,8 +47,6 @@ describe('Test Checkmate Cases', function () {
     }, {
       headers: { 'Content-Type': 'application/json' }
     })
-
-    await sleep(500)
 
     await axios.post(serverUrl + '/move', {
       piece: 'wq',
@@ -64,8 +56,6 @@ describe('Test Checkmate Cases', function () {
       headers: { 'Content-Type': 'application/json' }
     })
 
-    await sleep(500)
-
     await axios.post(serverUrl + '/move', {
       piece: 'bn',
       startPoint: [1, 7],
@@ -74,8 +64,6 @@ describe('Test Checkmate Cases', function () {
       headers: { 'Content-Type': 'application/json' }
     })
 
-    await sleep(500)
-
     await axios.post(serverUrl + '/move', {
       piece: 'wq',
       startPoint: [7, 4],
@@ -83,8 +71,6 @@ describe('Test Checkmate Cases', function () {
     }, {
       headers: { 'Content-Type': 'application/json' }
     })
-
-    await sleep(4000)
 
     var result = await axios.get(serverUrl + '/result')
     assert.equal(JSON.stringify(result.data), JSON.stringify('white_won'))
