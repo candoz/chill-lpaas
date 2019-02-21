@@ -2,7 +2,7 @@ const assert = require('assert')
 const axios = require('axios')
 const serverUrl = 'http://localhost:5000'
 const msToWaitForInit = 2000
-const maxTestDuration = 20000
+const maxTestDuration = 25000
 const desiredResult = 'white_won'
 
 function sleep (ms) {
