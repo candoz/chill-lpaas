@@ -63,7 +63,7 @@ export default {
     }
   },
   mounted: function () {
-    // this.$modal.show('end-game-modal')
+    this.$modal.show('end-game-modal')
     // this.$modal.show('promotion-modal')
   }
 }
@@ -108,7 +108,4 @@ export default {
   min-height: 100px;
   text-align: center !important;
 }
-
-// TODO media query per mobile aumentando la width e height
-
 </style>
