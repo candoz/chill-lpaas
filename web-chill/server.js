@@ -31,7 +31,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.post('/move', (req, res, next) => {
-  logger.log('info', 'Request to move piece %s to %s', req.body.startPoint, req.body.endPoint)
+  logger.log('info', 'Request to move piece %s from %s to %s', req.body.piece, req.body.startPoint, req.body.endPoint)
   let goalName = 'move'
   let body = 'do_move(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ',' + utility.wrapCoordinate(req.body.endPoint) + ')'
 
@@ -45,7 +45,7 @@ app.post('/move', (req, res, next) => {
 })
 
 app.post('/move/withpromotion', (req, res, next) => {
-  logger.log('info', 'Request to move with promotion piece %s to %s', req.body.startPoint, req.body.endPoint)
+  logger.log('info', 'Request to move with promotion piece %s from %s to %s', req.body.piece, req.body.startPoint, req.body.endPoint)
   let goalName = 'moveAndPromote'
   let body = 'do_move_and_promote(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ',' + utility.wrapCoordinate(req.body.endPoint) + ',' + req.body.promotion + ')'
 
@@ -58,7 +58,7 @@ app.post('/move/withpromotion', (req, res, next) => {
 })
 
 app.post('/move/longcastle', (req, res, next) => {
-  logger.log('info', 'Request to do long castle %s to %s', req.body.startPoint, req.body.endPoint)
+  logger.log('info', 'Request to do long castle with piece %s from %s to %s', req.body.piece, req.body.startPoint, req.body.endPoint)
   let goalName = 'longcastle'
   let body = 'do_long_castle(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ',' + utility.wrapCoordinate(req.body.endPoint) + ')'
 
@@ -71,7 +71,7 @@ app.post('/move/longcastle', (req, res, next) => {
 })
 
 app.post('/move/shortcastle', (req, res, next) => {
-  logger.log('info', 'Request to do short castle %s to %s', req.body.startPoint, req.body.endPoint)
+  logger.log('info', 'Request to do short castle with piece %s from %s to %s', req.body.piece, req.body.startPoint, req.body.endPoint)
   let goalName = 'shortcastle'
   let body = 'do_short_castle(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ',' + utility.wrapCoordinate(req.body.endPoint) + ')'
 
@@ -106,7 +106,7 @@ app.get('/move/available', (req, res, next) => {
   let body = 'available_moves_compact(' + req.query.startPoint + ',R)'
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
-    logger.log('info', 'Completed available moves for %s piece with result: %s', req.query.startPoint, lpaasResponse)
+    logger.log('info', 'Completed available moves for piece in coordinates %s with result: %s', req.query.startPoint, lpaasResponse)
     let parsedAvailableMoves = lpaasResponse.toString()
       .replace('(', '').replace(')', '').replace('available_moves_compact', '')
     let regex = /\[\[(.*?)\]\]/g
@@ -203,7 +203,6 @@ function startChillServer () {
   } else {
     lpaasFound = true
     setInterval(() => {
-      logger.log('info', 'Server polling LPaaS to: %s', url)
       axios.get(url + '/chessboard').catch(error => logger.log('error', 'Fail to poll lpaas chessboard %s', error))
         .finally(() => axios.get(url + '/turn').catch(error => logger.log('error', 'Fail to poll lpaas turn %s', error))
           .finally(() => axios.get(url + '/result').catch(error => logger.log('error', 'Fail to poll lpaas result %s', error))

@@ -108,9 +108,6 @@ export const store = new Vuex.Store({
   actions: {
     setChessboard: context => {
       axios.post(serverUrl + '/chessboard').then(response => {
-        context.state.selection = null
-        context.state.lastMove = []
-        context.state.availableMoves = []
         console.log(response)
       }).catch(error => {
         console.log(error)
