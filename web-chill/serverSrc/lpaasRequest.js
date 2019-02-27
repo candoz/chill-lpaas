@@ -10,6 +10,7 @@ const lpaasUrl = 'http://' + lpaasIP + ':8080/lpaas'
 const theoryPath = lpaasUrl + '/theories/chill'
 const goalPath = lpaasUrl + '/goals'
 const solutionPath = lpaasUrl + '/solutions'
+const theoryResultPath = lpaasUrl + '/theories/result'
 
 const chessboardGoalUrl = goalPath + '/chessboard'
 const resultGoalUrl = goalPath + '/result'
@@ -52,6 +53,7 @@ function loadChillTheory (callback, errorHandler) {
         logger.log('error', 'Initialization: Failed to load chill theory to LPaaS: %s', theoryError)
         errorHandler(theoryError)
       })
+    axios.post(theoryResultPath, '', {headers: headers, params: { name: 'result' }})
   })
 }
 
@@ -261,6 +263,22 @@ function getSolutionResult (url, callback, error) {
     .catch(err => error(err))
 }
 
+function addTheory (url, body, callback, error) {
+  axios.post(url, body, {headers: headers})
+    .then(theoryResponse => {
+      logger.log('info', 'Initialization: Chill theory loaded to LPaaS')
+      callback(theoryResponse)
+    })
+    .catch(theoryError => {
+      logger.log('error', 'Initialization: Failed to load chill theory to LPaaS: %s', theoryError)
+      error(theoryError)
+    })
+}
+
+function getTheoryFacts (url, callback, error) {
+  axios.get(url).then(theoryReponse => callback(theoryReponse.data.facts)).catch(errorMessage => { error(errorMessage) })
+}
+
 module.exports = {
 
   theoryPath: theoryPath,
@@ -269,6 +287,7 @@ module.exports = {
   resultSolutionUrl: resultSolutionUrl,
   turnSolutionUrl: turnSolutionUrl,
   lastMoveSolutionUrl: lastMoveSolutionUrl,
+  theoryResultPath: theoryResultPath,
   loadChillTheory: loadChillTheory,
   loadDefaultGoalAndSolution: loadDefaultGoalAndSolution,
   updateGameResultSolution: updateGameResultSolution,
@@ -277,5 +296,7 @@ module.exports = {
   updateGameChessboardSolution: updateGameChessboardSolution,
   genericUpdateBySolution: genericUpdateBySolution,
   deleteLPaaSEntity: deleteLPaaSEntity,
-  getSolutionResult: getSolutionResult
+  getSolutionResult: getSolutionResult,
+  addTheory: addTheory,
+  getTheoryFacts: getTheoryFacts
 }

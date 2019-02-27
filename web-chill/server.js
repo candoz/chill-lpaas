@@ -4,7 +4,7 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
 const boom = require('boom')
-const url = 'http://localhost:5000'
+const url = 'http://localhost:' + (process.env.PORT || 5000)
 const axios = require('axios')
 
 const loggerUtility = require('./serverSrc/loggerUtility')
@@ -135,6 +135,9 @@ app.post('/chessboard', (req, res, next) => {
 })
 
 app.get('/result', (req, res, next) => {
+  lpaas.getTheoryFacts(lpaas.theoryResultPath, factsArray => {
+    resultCache = factsArray[0].split('.')[0]
+  }, error => logger.log('error', error))
   res.send(resultCache)
 })
 
@@ -233,6 +236,7 @@ function updateGameState (callback) {
   lpaas.updateGameResultSolution(solution => {
     let regex = /\((.*?)\)/
     resultCache = regex.exec(solution)[1]
+    lpaas.addTheory(lpaas.theoryResultPath, resultCache, response => logger.log('info', response), error => logger.log('error', error))
     updatingTurn = true
     lpaas.updateGameTurnSolution(response => {
       updatingTurn = false

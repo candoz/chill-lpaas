@@ -15,16 +15,18 @@ services:
     environment:
      LPAAS_IP: "lpaas-ws"
      WAIT_LPAAS: 5000
+     PORT: 5000
     depends_on:
       - lpaas-ws
   second-web-chill:
     build: ./web-chill/.
     ports: 
-      - "5001:5000"
+      - "5001:5001"
     links:
      - lpaas-ws
     environment:
      LPAAS_IP: "lpaas-ws"
      WAIT_LPAAS: 7000
+     PORT: 5001
     depends_on:
       - lpaas-ws
