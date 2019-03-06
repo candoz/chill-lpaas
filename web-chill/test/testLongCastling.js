@@ -102,8 +102,7 @@ describe('Test Long Castling Cases', function () {
 
     await axios.post(serverUrl + '/move/longcastle', {
       piece: 'wk',
-      startPoint: [4, 0],
-      endPoint: [2, 0]
+      startPoint: [4, 0]
     }, {
       headers: { 'Content-Type': 'application/json' }
     })
@@ -223,8 +222,7 @@ describe('Test Long Castling Cases', function () {
 
     await axios.post(serverUrl + '/move/longcastle', {
       piece: 'wk',
-      startPoint: [4, 0],
-      endPoint: [2, 0]
+      startPoint: [4, 0]
     }, {
       headers: { 'Content-Type': 'application/json' }
     })

@@ -70,8 +70,7 @@ describe('Test Short Castling Cases', function () {
 
     await axios.post(serverUrl + '/move/shortcastle', {
       piece: 'wk',
-      startPoint: [4, 0],
-      endPoint: [6, 0]
+      startPoint: [4, 0]
     }, {
       headers: { 'Content-Type': 'application/json' }
     })
@@ -159,8 +158,7 @@ describe('Test Short Castling Cases', function () {
 
     await axios.post(serverUrl + '/move/shortcastle', {
       piece: 'wk',
-      startPoint: [4, 0],
-      endPoint: [6, 0]
+      startPoint: [4, 0]
     }, {
       headers: { 'Content-Type': 'application/json' }
     })
