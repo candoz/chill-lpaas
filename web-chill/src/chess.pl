@@ -281,8 +281,7 @@ do_move(Piece, P0, P) :-
   ),
   change_turn.
 
-%%% Move the Piece, if possible, from P0 to P and then promote to the Promoted\_piece.
-%%% Also in this case both P0 and P must be represented as ``point(X,Y)''.
+%%% Move the Piece, if possible, from P0 to P and then promote to the Promoted_piece.
 %%% As a consequence, the board will be updated and the turn will be changed.
 %%% Use this predicate only when a pawn is reaching the final row and, therefore, must promote.
 % do_move_and_promote(+Piece, +P0, +P, +Promoted_piece)
@@ -300,24 +299,32 @@ do_move_and_promote(Piece, P0, P, Promoted_piece) :-
   change_turn.
 
 
-do_short_castle(Piece, P0, P2) :-
+%%% Execute, if possible, a short castle for the King in P0.
+%%% As a consequence, the position of both the king and the corresponding rook will be updated on the board,
+%%% and the turn will be changed.
+% do_short_castle(+King, +P0)
+do_short_castle(King, P0) :-
   turn(Color),
-  team(Piece, Color),
-  legal_castle(Piece, P0, P2),
-  steps_east(P0, P1, 1),
+  team(King, Color),
   steps_east(P0, P2, 2), % where the king wants to go
+  legal_castle(King, P0, P2),
+  steps_east(P0, P1, 1),
   steps_east(P0, P3, 3), % where the allied tower is
-  update_board_for_castle(Piece, P0, P1, P2, P3),
+  update_board_for_castle(King, P0, P1, P2, P3),
   change_turn.
 
-do_long_castle(Piece, P0, P2) :-
+%%% Execute, if possible, a long castle for the King in P0.
+%%% As a consequence, the position of both the king and the corresponding rook will be updated on the board,
+%%% and the turn will be changed.
+% do_long_castle(+King, +P0)
+do_long_castle(King, P0) :-
   turn(Color),
-  team(Piece, Color),
-  legal_castle(Piece, P0, P2),
-  steps_west(P0, P1, 1),
+  team(King, Color),
   steps_west(P0, P2, 2), % where the king wants to go
+  legal_castle(King, P0, P2),
+  steps_west(P0, P1, 1),
   steps_west(P0, P4, 4), % where the allied tower is
-  update_board_for_castle(Piece, P0, P1, P2, P4),
+  update_board_for_castle(King, P0, P1, P2, P4),
   change_turn.
 
 
@@ -416,7 +423,7 @@ legal(cell(P0,P0_content), cell(P,P_content)) :- % excluding castling, see below
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% legal_castle(+Piece, P0, P2)
+% legal_castle(+Piece, P0, P)
 legal_castle(Piece, P0, P) :-
   cell(P0, Piece),
   king(Piece),
