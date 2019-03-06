@@ -262,7 +262,7 @@ available_moves(P0, Points_list) :- findall(P, available_move(P0, P), Points_lis
 %%% Retrieves a list containing all the cells to which the (eventual) piece residing in point(X0,Y0) can move to.
 %%% The list items are presented in the compact format "[X,Y]"
 % available_moves([+X0,+Y0], -Compact_list)
-available_moves_compact([X0,Y0], Compact_list) :- findall([X,Y], available_move(point(X0,Y0), point(X,Y)), Coordinates_list).
+available_moves_compact([X0,Y0], Compact_list) :- findall([X,Y], available_move(point(X0,Y0), point(X,Y)), Compact_list).
 
 
 %%% Move the Piece, if possible, from the point P0 to the point P.
