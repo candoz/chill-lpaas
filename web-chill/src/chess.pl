@@ -16,7 +16,9 @@ cell(point(0,0),wr). cell(point(1,0),wn). cell(point(2,0),wb). cell(point(3,0),w
 %    White Pawn    |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     |     White Pawn     .
 %    White Rook    |    White kNight    |    White Bishop    |     White Queen    |     White King     |    White Bishop    |    White kNight    |     White Rook     .
 
-turn(white).          % white, black
+%%% Indicates the current turn:  Color can be “black” or “white”
+% turn(-Color)
+turn(white).
 
 
 %%% Will contain a list of couples.
@@ -53,7 +55,10 @@ enemies(Piece1, Piece2) :-
   team(Piece2, Color2),
   Color1 \= Color2.
 
-% result(?R)
+
+%%% Evaluates the current game status: R can be “white_won” or “black_won” (by checkmate),
+%%% “draw” (by stalemate), “white_in_check”, “black_in_check”, or “nothing”.
+% result(-R)
 result(white_won) :- checkmate, turn(black), !.
 result(black_won) :- checkmate, turn(white), !.
 result(draw) :- stalemate, !.
@@ -63,12 +68,14 @@ result(black_in_check) :- turn(black), under_check(black), !.
 result(nothing).
 
 
-%%% Retrieves all the chessboard cells in a list of lists, useful for client requests:
-%%% each sub-list is composed by X coordinate, Y coordinate and the respective Content.
+%%% Retrieves all the chessboard cells in a list, following the usual format
+%%% "cell(point(X,Y),Piece)" for every item of the list
 % chessboard(-Cells_list)
 chessboard(Cells_list) :- findall(cell(P,Content), cell(P,Content), Cells_list).
 
-% chessboard(-Compact_list)
+%%% Retrieves all the chessboard cells in a list, following the compact format
+%%% "[X,Y,Piece]" for every item of the list
+% chessboard_compact(-Compact_list)
 chessboard_compact(Compact_list) :- findall([X,Y,Content], cell(point(X,Y), Content), Compact_list).
 
 
@@ -114,6 +121,9 @@ undo_last_update :-
   assert(history(Older_history)).
 
 
+%%% Evaluates if the Color team will be under check after having simulated the retraction
+%%% of the Cells_to_retract and the following assertion of the Cells_to_assert.
+% new_position_not_under_check(+Cells_to_retract, +Cells_to_assert, +Color)
 new_position_not_under_check(Cells_to_retract, Cells_to_assert, Color) :-
   update_board(Cells_to_retract, Cells_to_assert),
   (
@@ -129,12 +139,15 @@ new_position_not_under_check(Cells_to_retract, Cells_to_assert, Color) :-
     )
   ).
 
-
-% last_moved(?Points_list)
-last_moved([]) :- history([]), !. % green cut
+%%% Retrieves a list containing the cells involved in the last movement,
+%%% following the usual format "cell(point(X,Y),piece)" for every list item
+% last_moved(-Points_list)
+last_moved([]) :- hitory([]), !. % green cut
 last_moved(Last_asserted_list) :- history([(_, Last_asserted_list) | _]).
 
-% last_moved_compact(?Coordinates_list)
+%%% Retrieves a list containing the cells involved in the last movement,
+%%% following the compact format "[X,Y,piece]" for every list item
+% last_moved_compact(-Coordinates_list)
 last_moved_compact([]) :- last_moved([]).
 last_moved_compact([[X1,Y1], [X2,Y2]]) :- last_moved([cell(point(X1,Y1),_), cell(point(X2,Y2),_)]).
 last_moved_compact([[X1,Y1], [X2,Y2], [X3,Y3], [X4,Y4]]) :- % for castling, where 4 cells are involved
@@ -241,14 +254,20 @@ can_move(Color) :-
 available_move(P0, P) :- cell(P0, Piece), legal_move(Piece, P0, P).
 available_move(P0, P) :- cell(P0, Piece), legal_castle(Piece, P0, P).
 
-% available_moves(+P0, ?Points_list)
-available_moves(P0, Coordinates_list) :- findall(P, available_move(P0, P), Coordinates_list).
+%%% Retrieves a list containing all the cells to which the (eventual) piece residing in P0 can move to.
+%%% The list items are presented in the format "(point(X,Y)"
+% available_moves(+P0, -Points_list)
+available_moves(P0, Points_list) :- findall(P, available_move(P0, P), Points_list).
 
-% available_moves(+Coordinates, ?Coordinates_list)
-available_moves_compact([X0,Y0], Coordinates_list) :- findall([X,Y], available_move(point(X0,Y0), point(X,Y)), Coordinates_list).
+%%% Retrieves a list containing all the cells to which the (eventual) piece residing in point(X0,Y0) can move to.
+%%% The list items are presented in the compact format "[X,Y]"
+% available_moves([+X0,+Y0], -Compact_list)
+available_moves_compact([X0,Y0], Compact_list) :- findall([X,Y], available_move(point(X0,Y0), point(X,Y)), Coordinates_list).
 
 
-%%% Move the Piece, if possible, from P0 to P
+%%% Move the Piece, if possible, from the point P0 to the point P.
+%%% As a consequence, the board will be updated and the turn will be changed.
+%%% Use this for every move except for promotions, short castling and long castling.
 % do_move(+Piece, +P0, +P)
 do_move(Piece, P0, P) :-
   not must_promote(Piece, P), % when reaching the last row, a pawn cannot move without promotion
@@ -262,7 +281,10 @@ do_move(Piece, P0, P) :-
   ),
   change_turn.
 
-%%% Move the Piece, if possible, from P0 to P and promote it to Promoted_piece
+%%% Move the Piece, if possible, from P0 to P and then promote to the Promoted\_piece.
+%%% Also in this case both P0 and P must be represented as ``point(X,Y)''.
+%%% As a consequence, the board will be updated and the turn will be changed.
+%%% Use this predicate only when a pawn is reaching the final row and, therefore, must promote.
 % do_move_and_promote(+Piece, +P0, +P, +Promoted_piece)
 do_move_and_promote(Piece, P0, P, Promoted_piece) :-
   must_promote(Piece, P),
