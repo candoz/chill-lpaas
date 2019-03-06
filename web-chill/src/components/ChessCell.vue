@@ -97,7 +97,7 @@ export default {
         )
     },
     isArrayInArray (item, arr) {
-      return arr.some(elem => JSON.stringify(elem) === JSON.stringify(item))
+      return Array.isArray(arr) && arr.some(elem => JSON.stringify(elem) === JSON.stringify(item))
     }
   }
 }

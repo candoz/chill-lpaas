@@ -90,7 +90,7 @@ app.get('/lastmoved', (req, res, next) => {
     lpaas.getSolutionResult(
       lpaas.lastMoveSolutionUrl,
       response => {
-        lastMoveCache = response.data.solutions.toString().replace('(', '').replace(')', '').replace('last_moved_compact', '')
+        lastMoveCache = response.data.solutions.toString().replace('(', '').replace(')', '').replace('last_moved_compact', '') || []
         res.send(lastMoveCache)
       },
       error => {
@@ -236,7 +236,7 @@ function updateGameState (callback) {
   lpaas.updateGameResultSolution(solution => {
     let regex = /\((.*?)\)/
     resultCache = regex.exec(solution)[1]
-    lpaas.addTheory(lpaas.theoryResultPath, resultCache, response => logger.log('info', response), error => logger.log('error', error))
+    lpaas.addTheory(lpaas.theoryResultPath, resultCache, response => logger.log('info', 'Add result theory to LPaaS'), error => logger.log('error', 'Fail to add theory to LPaaS: %s', error))
     updatingTurn = true
     lpaas.updateGameTurnSolution(response => {
       updatingTurn = false
