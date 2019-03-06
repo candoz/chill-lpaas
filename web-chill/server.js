@@ -58,9 +58,9 @@ app.post('/move/withpromotion', (req, res, next) => {
 })
 
 app.post('/move/longcastle', (req, res, next) => {
-  logger.log('info', 'Request to do long castle with piece %s from %s to %s', req.body.piece, req.body.startPoint, req.body.endPoint)
+  logger.log('info', 'Request to do long castle with piece %s in %s', req.body.piece, req.body.startPoint)
   let goalName = 'longcastle'
-  let body = 'do_long_castle(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ',' + utility.wrapCoordinate(req.body.endPoint) + ')'
+  let body = 'do_long_castle(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ')'
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)
@@ -71,9 +71,9 @@ app.post('/move/longcastle', (req, res, next) => {
 })
 
 app.post('/move/shortcastle', (req, res, next) => {
-  logger.log('info', 'Request to do short castle with piece %s from %s to %s', req.body.piece, req.body.startPoint, req.body.endPoint)
+  logger.log('info', 'Request to do short castle with piece %s in %s', req.body.piece, req.body.startPoint)
   let goalName = 'shortcastle'
-  let body = 'do_short_castle(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ',' + utility.wrapCoordinate(req.body.endPoint) + ')'
+  let body = 'do_short_castle(' + req.body.piece + ',' + utility.wrapCoordinate(req.body.startPoint) + ')'
 
   lpaas.genericUpdateBySolution(goalName, body, lpaasResponse => {
     logger.log('info', 'Movement completed: %s', lpaasResponse)

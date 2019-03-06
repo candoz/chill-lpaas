@@ -193,8 +193,7 @@ export const store = new Vuex.Store({
     doShortCastle: function (context, payload) {
       axios.post(serverUrl + '/move/shortcastle', {
         piece: payload.piece,
-        startPoint: payload.startPoint,
-        endPoint: payload.endPoint
+        startPoint: payload.startPoint
       }, {
         headers: { 'Content-Type': 'application/json' }
       }).then(response => {
@@ -204,8 +203,7 @@ export const store = new Vuex.Store({
     doLongCastle: function (context, payload) {
       axios.post(serverUrl + '/move/longcastle', {
         piece: payload.piece,
-        startPoint: payload.startPoint,
-        endPoint: payload.endPoint
+        startPoint: payload.startPoint
       }, {
         headers: { 'Content-Type': 'application/json' }
       }).then(response => {
